@@ -1,0 +1,30 @@
+{
+  "free-state": {
+    "name": "Free State, South Africa",
+    "season": "SAMPLE",
+    "source": "SYNTHETIC PLACEHOLDER - not real satellite data. Replace in phase 1.",
+    "model": {"slope": 8.0, "intercept": -1.0},
+    "observations": [
+      {"date": "2000-11-15", "red": 0.18, "nir": 0.24},
+      {"date": "2000-12-15", "red": 0.12, "nir": 0.32},
+      {"date": "2001-01-15", "red": 0.06, "nir": 0.42},
+      {"date": "2001-02-15", "red": 0.05, "nir": 0.45},
+      {"date": "2001-03-15", "red": 0.08, "nir": 0.36},
+      {"date": "2001-04-15", "red": 0.15, "nir": 0.26}
+    ]
+  },
+  "north-west": {
+    "name": "North West, South Africa",
+    "season": "SAMPLE",
+    "source": "SYNTHETIC PLACEHOLDER - not real satellite data. Replace in phase 1.",
+    "model": {"slope": 8.0, "intercept": -1.0},
+    "observations": [
+      {"date": "2000-11-15", "red": 0.20, "nir": 0.24},
+      {"date": "2000-12-15", "red": 0.14, "nir": 0.30},
+      {"date": "2001-01-15", "red": 0.09, "nir": 0.37},
+      {"date": "2001-02-15", "red": 0.08, "nir": 0.39},
+      {"date": "2001-03-15", "red": 0.11, "nir": 0.31},
+      {"date": "2001-04-15", "red": 0.17, "nir": 0.25}
+    ]
+  }
+}

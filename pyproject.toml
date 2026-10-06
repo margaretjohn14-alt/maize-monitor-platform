@@ -1,0 +1,7 @@
+[tool.pytest.ini_options]
+# Lets the tests import the "app" package from the repo root.
+pythonpath = ["."]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
