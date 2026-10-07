@@ -35,3 +35,7 @@ def estimate(region_id: str) -> dict:
         "yield_t_per_ha": estimate_yield(series, model["slope"], model["intercept"]),
         "data_source": region["source"],
     }
+
+@app.get("/version")
+def version() -> dict:
+    return {"version": app.version}

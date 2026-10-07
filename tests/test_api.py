@@ -24,3 +24,7 @@ def test_estimate_returns_series_and_yield():
 
 def test_unknown_region_gives_404():
     assert client.get("/estimate/atlantis").status_code == 404
+
+def test_version():
+    assert client.get("/version").json() == {"version": "0.1.0"}
+    
