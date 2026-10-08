@@ -11,7 +11,7 @@ import xarray as xr
 STAC_URL = "https://earth-search.aws.element84.com/v1"
 # Small test area in north-western Free State, a major maize region (lon/lat)
 BBOX = [26.3, -27.7, 27.0, -27.2]
-MONTH = "2018-02"
+MONTH = "2024-02"
 CRS = "EPSG:32735"
 RESOLUTION = 100
 # Scene classification classes kept: 4 = vegetation, 5 = bare soil
