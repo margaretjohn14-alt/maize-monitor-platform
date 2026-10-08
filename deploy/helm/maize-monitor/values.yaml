@@ -1,6 +1,6 @@
 image:
-  repository: maize-monitor
-  tag: dev
+  repository: ghcr.io/margaretjohn14-alt/maize-monitor-platform
+  tag: latest
   pullPolicy: IfNotPresent
 
 api:
