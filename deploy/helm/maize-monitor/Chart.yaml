@@ -1,0 +1,6 @@
+apiVersion: v2
+name: maize-monitor
+description: Maize monitoring API and weekly update job
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

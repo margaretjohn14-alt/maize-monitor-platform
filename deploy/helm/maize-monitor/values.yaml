@@ -1,0 +1,12 @@
+image:
+  repository: maize-monitor
+  tag: dev
+  pullPolicy: IfNotPresent
+
+api:
+  replicas: 2
+  port: 8000
+
+update:
+  schedule: "0 6 * * 1"
+  timeZone: "Europe/Berlin"

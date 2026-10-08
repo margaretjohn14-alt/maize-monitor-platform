@@ -1,9 +1,10 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: maize-update
+  name: {{ .Release.Name }}-update
 spec:
-  schedule: "0 6 * * 1"
+  schedule: {{ .Values.update.schedule | quote }}
+  timeZone: {{ .Values.update.timeZone | quote }}
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 3
   failedJobsHistoryLimit: 3
@@ -15,5 +16,6 @@ spec:
           restartPolicy: Never
           containers:
             - name: update
-              image: maize-monitor:dev
+              image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+              imagePullPolicy: {{ .Values.image.pullPolicy }}
               command: ["python", "-m", "app.update"]
