@@ -1,0 +1,4 @@
+pystac-client>=0.8
+odc-stac>=0.3
+dask>=2024.1
+numpy>=1.26
