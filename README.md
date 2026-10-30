@@ -15,9 +15,9 @@ Inspired by operational crop monitoring services. Not affiliated with any compan
 | 3 | Docker | Done |
 | 4 | CI pipeline (lint, tests, Helm lint, image build and push) | Done |
 | 5 | Kubernetes with Helm, weekly CronJob, image from registry | Done (local cluster) |
-| 6 | Terraform and Azure | To do |
-| 7 | Monitoring | To do |
-| 8 | Incident report and docs | To do |
+| 6 | Terraform and Azure | Done |
+| 7 | Monitoring | Done |
+| 8 | Incident report and docs | Done |
 
 ## How it fits together
 
