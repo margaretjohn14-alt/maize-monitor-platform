@@ -1,5 +1,7 @@
+from unittest.mock import patch
 from app.update import run
 
 
 def test_update_processes_all_regions():
-    assert run() == 2
+    with patch("app.update.fetch_ndvi", return_value=0.45):
+        assert run() == 2

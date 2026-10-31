@@ -1,7 +1,12 @@
 import ee
 import os
 
-def init_ee():
+_initialized = False
+
+def _ensure_initialized():
+    global _initialized
+    if _initialized:
+        return
     key = os.environ.get("GEE_SERVICE_ACCOUNT_KEY")
     if key:
         creds = ee.ServiceAccountCredentials(
@@ -10,11 +15,12 @@ def init_ee():
         )
         ee.Initialize(creds)
     else:
-        ee.Initialize()  # local dev with browser auth
+        ee.Initialize()
+    _initialized = True
 
-init_ee()
 
 def fetch_ndvi(bbox: list[float], start="2024-04-01", end="2024-09-30") -> float | None:
+    _ensure_initialized()
     region = ee.Geometry.Rectangle(bbox)
     col = (
         ee.ImageCollection("COPERNICUS/S2_SR_HARMONIZED")
