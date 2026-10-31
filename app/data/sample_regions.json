@@ -18,5 +18,15 @@
     "bbox": [22.0, -28.0, 28.0, -24.0],
     "model": {"slope": 8.0, "intercept": -1.0},
     "observations": []
+  },
+  "kenya-rift": {
+    "name": "Rift Valley, Kenya",
+    "season": "2024",
+    "season_start": "2024-03-01",
+    "season_end": "2024-08-31",
+    "source": "Sentinel-2 via Google Earth Engine",
+    "bbox": [35.0, -1.0, 37.5, 1.5],
+    "model": {"slope": 8.0, "intercept": -1.0},
+    "observations": []
   }
 }
