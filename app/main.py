@@ -1,6 +1,7 @@
 """Web API. Run locally with: uvicorn app.main:app --reload"""
 
 from fastapi import FastAPI, HTTPException
+
 from app.core import estimate_yield, load_regions
 from app.gee import fetch_ndvi
 

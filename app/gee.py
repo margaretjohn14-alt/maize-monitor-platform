@@ -1,5 +1,6 @@
-import ee
 import os
+
+import ee
 
 _initialized = False
 

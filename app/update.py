@@ -1,6 +1,7 @@
 """Weekly data update. Run with: python -m app.update"""
 
 import logging
+
 from app.core import estimate_yield, load_regions
 from app.gee import fetch_ndvi
 
