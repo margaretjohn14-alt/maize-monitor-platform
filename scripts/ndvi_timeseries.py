@@ -8,10 +8,15 @@ months already in the output file are skipped.
 
 import csv
 import logging
+import os
 import time
 from pathlib import Path
 
 import numpy as np
+
+os.environ.setdefault("GDAL_HTTP_TIMEOUT", "60")
+os.environ.setdefault("GDAL_HTTP_MAX_RETRY", "3")
+os.environ.setdefault("GDAL_HTTP_RETRY_DELAY", "5")
 
 REFERENCE = Path("data/reference/free_state_maize.csv")
 OUTPUT = Path("data/ndvi/test_area_monthly.csv")
@@ -22,6 +27,7 @@ SEASON_MONTHS = [(0, 11), (0, 12), (1, 1), (1, 2), (1, 3), (1, 4)]
 FIELDS = ["season", "month", "mean_ndvi", "clear_dates", "valid_fraction", "baselines", "status"]
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+logging.getLogger("rasterio").setLevel(logging.WARNING)
 log = logging.getLogger("ndvi_timeseries")
 
 
@@ -67,6 +73,7 @@ def collect(seasons: list) -> None:
             if month in finished:
                 log.info("skip %s (already done)", month)
                 continue
+            log.info("month=%s started", month)
             started = time.monotonic()
             try:
                 result = monthly_ndvi(BBOX, month)
