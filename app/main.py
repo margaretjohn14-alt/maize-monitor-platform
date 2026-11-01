@@ -15,6 +15,23 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Fields surfaced from static region data (no GEE call needed)
+STATIC_FIELDS = [
+    "centroid",
+    "area_kha",
+    "eudr_status",
+    "deforestation_risk",
+    "land_converted_pct",
+    "water_stress",
+    "rainfall_anomaly_pct",
+    "harvest_window",
+]
+
+
+def _static_meta(region: dict) -> dict:
+    """Return the subset of static metadata fields for a region."""
+    return {k: region.get(k) for k in STATIC_FIELDS}
+
 
 @app.get("/health")
 def health() -> dict:
@@ -23,8 +40,12 @@ def health() -> dict:
 
 @app.get("/regions")
 def regions() -> list[dict]:
+    """List all regions with static metadata. No GEE calls — safe for map load."""
     data = load_regions()
-    return [{"id": key, "name": value["name"]} for key, value in data.items()]
+    return [
+        {"id": key, "name": value["name"], **_static_meta(value)}
+        for key, value in data.items()
+    ]
 
 
 @app.get("/estimate/{region_id}")
@@ -53,6 +74,7 @@ def estimate(region_id: str) -> dict:
         "ndvi_series": series,
         "yield_t_per_ha": estimate_yield(series, model["slope"], model["intercept"]),
         "data_source": region["source"],
+        **_static_meta(region),
     }
 
 

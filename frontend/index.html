@@ -1,0 +1,734 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Maize Monitor</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <style>
+    :root {
+      --compliant: #4ec76a;
+      --review: #f0a030;
+      --noncompliant: #e05050;
+      --bg: #0d100c;
+      --bg-overlay: rgba(13,16,12,0.90);
+      --bg-panel: #111713;
+      --border: rgba(255,255,255,0.10);
+      --fg: #e8e8e2;
+      --fg2: #8a8878;
+      --accent: #5ecb70;
+      color-scheme: dark;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      overflow: hidden;
+      height: 100dvh;
+    }
+
+    #map {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+    }
+
+    /* ── Top bar ── */
+    .topbar {
+      position: fixed;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 800;
+      background: var(--bg-overlay);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 9px 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      white-space: nowrap;
+      max-width: calc(100vw - 32px);
+    }
+
+    .topbar-logo {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--accent);
+    }
+
+    .topbar-divider {
+      width: 1px;
+      height: 14px;
+      background: var(--border);
+      flex-shrink: 0;
+    }
+
+    #status-text {
+      font-size: 12px;
+      color: var(--fg2);
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* ── Legend ── */
+    .legend {
+      position: fixed;
+      bottom: 24px;
+      left: max(16px, env(safe-area-inset-left, 0px));
+      z-index: 800;
+      background: var(--bg-overlay);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 11px 14px;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+
+    .legend-title {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: var(--fg2);
+      margin-bottom: 7px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 12px;
+      color: var(--fg);
+      margin-bottom: 5px;
+    }
+    .legend-item:last-child { margin-bottom: 0; }
+
+    .legend-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* ── Tooltip ── */
+    .map-tooltip {
+      position: fixed;
+      background: var(--bg-overlay);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 9px 13px;
+      font-size: 12px;
+      pointer-events: none;
+      z-index: 700;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      transform: translate(-50%, calc(-100% - 14px));
+      white-space: nowrap;
+    }
+
+    .tt-name { font-weight: 600; margin-bottom: 2px; }
+    .tt-sub { color: var(--fg2); font-size: 11px; }
+
+    /* ── Side panel ── */
+    .panel {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 340px;
+      z-index: 900;
+      background: var(--bg-panel);
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      transform: translateX(100%);
+      transition: transform 0.24s cubic-bezier(.4,0,.2,1);
+      overflow: hidden;
+    }
+
+    .panel.open { transform: translateX(0); }
+
+    .panel-header {
+      flex-shrink: 0;
+      padding: 20px 18px 14px;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+    }
+
+    .panel-close {
+      position: absolute;
+      top: 14px;
+      right: 12px;
+      width: 28px;
+      height: 28px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: transparent;
+      color: var(--fg2);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      line-height: 1;
+      transition: background 0.15s;
+    }
+    .panel-close:hover { background: rgba(255,255,255,0.07); }
+
+    .panel-region-name {
+      font-size: 15px;
+      font-weight: 600;
+      line-height: 1.35;
+      padding-right: 36px;
+      margin-bottom: 8px;
+    }
+
+    .eudr-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 9px;
+      border-radius: 20px;
+    }
+    .eudr-badge::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+    .eudr-badge.compliant    { background: rgba(78,199,106,0.14); color: var(--compliant); }
+    .eudr-badge.review       { background: rgba(240,160,48,0.14);  color: var(--review); }
+    .eudr-badge.noncompliant { background: rgba(224,80,80,0.14);   color: var(--noncompliant); }
+
+    .panel-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 18px 24px;
+    }
+
+    /* ── Metric grid ── */
+    .metric-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .metric-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+
+    .metric-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--fg2);
+      margin-bottom: 3px;
+    }
+
+    .metric-value {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+
+    .metric-unit {
+      font-size: 11px;
+      font-weight: 400;
+      color: var(--fg2);
+      margin-left: 1px;
+    }
+
+    .metric-sub {
+      font-size: 11px;
+      color: var(--fg2);
+      margin-top: 2px;
+    }
+
+    /* ── Section title ── */
+    .section-title {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: var(--fg2);
+      margin-bottom: 8px;
+    }
+
+    /* ── Risk table ── */
+    .risk-table {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 2px 12px;
+      margin-bottom: 16px;
+    }
+
+    .risk-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .risk-row:last-child { border-bottom: none; }
+
+    .risk-key { color: var(--fg2); }
+    .risk-val { font-weight: 500; color: var(--fg); }
+    .risk-val.high   { color: var(--noncompliant); }
+    .risk-val.medium { color: var(--review); }
+    .risk-val.low    { color: var(--compliant); }
+
+    /* ── Sparkline ── */
+    .sparkline-wrap {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px 6px;
+      margin-bottom: 12px;
+    }
+
+    .sparkline-wrap svg {
+      width: 100%;
+      height: 72px;
+      display: block;
+    }
+
+    /* ── Live section ── */
+    .live-section {
+      border-top: 1px solid var(--border);
+      padding-top: 14px;
+    }
+
+    .live-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .live-status {
+      font-size: 11px;
+      color: var(--fg2);
+      margin-top: 8px;
+      text-align: center;
+    }
+
+    .refresh-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      width: 100%;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--accent);
+      background: rgba(94,203,112,0.08);
+      border: 1px solid rgba(94,203,112,0.22);
+      border-radius: 7px;
+      padding: 8px 12px;
+      cursor: pointer;
+      transition: background 0.15s;
+      margin-top: 10px;
+    }
+    .refresh-btn:hover:not(:disabled) { background: rgba(94,203,112,0.16); }
+    .refresh-btn:disabled { opacity: 0.45; cursor: default; }
+
+    /* ── Loading spinner ── */
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .spinner {
+      display: inline-block;
+      width: 13px;
+      height: 13px;
+      border: 2px solid rgba(94,203,112,0.25);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      flex-shrink: 0;
+    }
+
+    .loading-msg {
+      font-size: 12px;
+      color: var(--fg2);
+      padding: 10px 0;
+    }
+
+    /* ── Attribution ── */
+    .attribution {
+      font-size: 10px;
+      color: var(--fg2);
+      opacity: 0.6;
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    /* ── Mobile ── */
+    @media (max-width: 600px) {
+      .panel {
+        top: auto;
+        right: 0;
+        left: 0;
+        width: 100%;
+        height: 72dvh;
+        border-left: none;
+        border-top: 1px solid var(--border);
+        border-radius: 14px 14px 0 0;
+        transform: translateY(100%);
+        transition: transform 0.24s cubic-bezier(.4,0,.2,1);
+      }
+      .panel.open { transform: translateY(0); }
+
+      .legend { bottom: 8px; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<div class="topbar">
+  <span class="topbar-logo">🌽 Maize Monitor</span>
+  <div class="topbar-divider"></div>
+  <span id="status-text">Loading regions…</span>
+</div>
+
+<div class="legend" aria-label="Map legend">
+  <div class="legend-title">EUDR Status</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--compliant)"></div>Compliant</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--review)"></div>Under Review</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--noncompliant)"></div>Non-Compliant</div>
+  <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);font-size:10px;color:var(--fg2)">
+    Circle size = growing area
+  </div>
+</div>
+
+<div class="panel" id="panel" aria-modal="true" role="dialog">
+  <div class="panel-header">
+    <button class="panel-close" id="panel-close" aria-label="Close panel">✕</button>
+    <div class="panel-region-name" id="panel-name"></div>
+    <div id="panel-badge"></div>
+  </div>
+  <div class="panel-body" id="panel-body"></div>
+</div>
+
+<div class="map-tooltip" id="tooltip" hidden aria-hidden="true"></div>
+
+<script>
+'use strict';
+
+// ── Config ──────────────────────────────────────────────────────────────────
+const API = 'https://maize-monitor.thankfulsand-8aae49c0.northeurope.azurecontainerapps.io';
+
+const EUDR_META = {
+  compliant:    { label: 'EUDR Compliant', cls: 'compliant',    color: '#4ec76a' },
+  review:       { label: 'Under Review',   cls: 'review',       color: '#f0a030' },
+  noncompliant: { label: 'Non-Compliant',  cls: 'noncompliant', color: '#e05050' },
+};
+const RISK_CLS  = { low: 'low', medium: 'medium', high: 'high', critical: 'high' };
+const STRESS_LB = { low: 'Low', moderate: 'Moderate', high: 'High', critical: 'Critical' };
+
+// ── Map setup ────────────────────────────────────────────────────────────────
+const map = L.map('map', { zoomControl: false }).setView([5, 18], 3);
+
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
+  subdomains: 'abcd',
+  maxZoom: 19,
+}).addTo(map);
+
+L.control.zoom({ position: 'topright' }).addTo(map);
+
+// ── DOM refs ─────────────────────────────────────────────────────────────────
+const statusText = document.getElementById('status-text');
+const panel      = document.getElementById('panel');
+const panelName  = document.getElementById('panel-name');
+const panelBadge = document.getElementById('panel-badge');
+const panelBody  = document.getElementById('panel-body');
+const tooltip    = document.getElementById('tooltip');
+
+let currentRegion = null;
+
+// ── Load regions ─────────────────────────────────────────────────────────────
+async function loadRegions() {
+  try {
+    const res = await fetch(`${API}/regions`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const regions = await res.json();
+    regions.forEach(r => addMarker(r));
+    statusText.textContent = `${regions.length} regions · Click a circle to explore`;
+  } catch (err) {
+    statusText.textContent = 'API unreachable — is the backend running?';
+    console.error('Failed to load regions:', err);
+  }
+}
+
+function addMarker(r) {
+  if (!r.centroid) return;
+  const eu     = EUDR_META[r.eudr_status] || EUDR_META.review;
+  const radius = Math.max(10, Math.min(26, Math.sqrt((r.area_kha || 400) / 75)));
+
+  const m = L.circleMarker([r.centroid[0], r.centroid[1]], {
+    radius,
+    fillColor:    eu.color,
+    fillOpacity:  0.82,
+    color:        'rgba(255,255,255,0.22)',
+    weight:       1.5,
+  }).addTo(map);
+
+  m.on('mouseover', e => showTooltip(r, eu, e.originalEvent));
+  m.on('mousemove', e => moveTooltip(e.originalEvent));
+  m.on('mouseout',  () => { tooltip.hidden = true; });
+  m.on('click',     () => openPanel(r));
+}
+
+function showTooltip(r, eu, e) {
+  tooltip.hidden = false;
+  tooltip.innerHTML = `
+    <div class="tt-name">${r.name}</div>
+    <div class="tt-sub">${eu.label}${r.area_kha ? ' · ' + r.area_kha.toLocaleString() + ' k ha' : ''}</div>`;
+  moveTooltip(e);
+}
+
+function moveTooltip(e) {
+  tooltip.style.left = e.clientX + 'px';
+  tooltip.style.top  = e.clientY + 'px';
+}
+
+// ── Panel open/close ──────────────────────────────────────────────────────────
+document.getElementById('panel-close').addEventListener('click', () => {
+  panel.classList.remove('open');
+  currentRegion = null;
+});
+
+function openPanel(r) {
+  currentRegion = r;
+  const eu = EUDR_META[r.eudr_status] || EUDR_META.review;
+
+  panelName.textContent  = r.name;
+  panelBadge.innerHTML   = `<span class="eudr-badge ${eu.cls}">${eu.label}</span>`;
+  panelBody.innerHTML    = renderStaticSection(r) + renderLiveLoading();
+
+  panel.classList.add('open');
+  fetchLiveData(r.id);
+}
+
+// ── Panel content ─────────────────────────────────────────────────────────────
+function renderStaticSection(r) {
+  const rain = r.rainfall_anomaly_pct != null
+    ? (r.rainfall_anomaly_pct > 0 ? '+' : '') + r.rainfall_anomaly_pct + '%'
+    : '—';
+
+  return `
+    <div class="metric-grid">
+      <div class="metric-card">
+        <div class="metric-label">Growing Area</div>
+        <div class="metric-value">${r.area_kha ? r.area_kha.toLocaleString() : '—'}<span class="metric-unit">k ha</span></div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Harvest Window</div>
+        <div class="metric-value" style="font-size:13px;line-height:1.4;padding-top:3px">${r.harvest_window || '—'}</div>
+      </div>
+    </div>
+
+    <div class="section-title">Risk &amp; Compliance</div>
+    <div class="risk-table">
+      <div class="risk-row">
+        <span class="risk-key">Deforestation Risk</span>
+        <span class="risk-val ${RISK_CLS[r.deforestation_risk] || ''}">${cap(r.deforestation_risk) || '—'}</span>
+      </div>
+      <div class="risk-row">
+        <span class="risk-key">Land Converted (post-2020)</span>
+        <span class="risk-val">${r.land_converted_pct != null ? r.land_converted_pct + '%' : '—'}</span>
+      </div>
+      <div class="risk-row">
+        <span class="risk-key">Water Stress</span>
+        <span class="risk-val ${RISK_CLS[r.water_stress] || ''}">${STRESS_LB[r.water_stress] || '—'}</span>
+      </div>
+      <div class="risk-row">
+        <span class="risk-key">Rainfall Anomaly</span>
+        <span class="risk-val">${rain}</span>
+      </div>
+    </div>`;
+}
+
+function renderLiveLoading() {
+  return `
+    <div class="live-section" id="live-section">
+      <div class="live-header">
+        <div class="section-title" style="margin:0">Live Satellite Data</div>
+        <div class="spinner"></div>
+      </div>
+      <p class="loading-msg">Querying Google Earth Engine for fresh NDVI…<br>This may take 10–20 seconds.</p>
+    </div>`;
+}
+
+function renderLiveData(estimate, timeseries) {
+  const ndvi    = estimate?.ndvi_series?.[0]?.ndvi ?? null;
+  const yld     = estimate?.yield_t_per_ha ?? null;
+  const monthly = timeseries?.monthly_ndvi || [];
+  const src     = estimate?.data_source || 'Sentinel-2 via GEE';
+
+  const sparkHtml = monthly.length >= 2
+    ? `<div class="section-title">Seasonal NDVI Trend</div>
+       <div class="sparkline-wrap">${sparklineSVG(monthly)}</div>`
+    : '';
+
+  return `
+    <div class="live-section" id="live-section">
+      <div class="section-title">Live Satellite Data</div>
+      <div class="metric-grid" style="margin-bottom:12px">
+        <div class="metric-card">
+          <div class="metric-label">NDVI</div>
+          <div class="metric-value">${ndvi != null ? ndvi.toFixed(3) : '—'}</div>
+          <div class="metric-sub">${descNDVI(ndvi)}</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Yield Forecast</div>
+          <div class="metric-value">${yld != null ? yld.toFixed(1) : '—'}<span class="metric-unit">t/ha</span></div>
+          <div class="metric-sub">${descYield(yld)}</div>
+        </div>
+      </div>
+      ${sparkHtml}
+      <div class="live-status">Source: ${src}</div>
+      <button class="refresh-btn" data-action="refresh">↻ Refresh Live Data</button>
+      <div class="attribution">Sentinel-2 SR · COPERNICUS/S2_SR_HARMONIZED</div>
+    </div>`;
+}
+
+function renderLiveError() {
+  return `
+    <div class="live-section" id="live-section">
+      <div class="section-title">Live Satellite Data</div>
+      <p class="loading-msg" style="color:var(--noncompliant)">GEE data unavailable for this region/season.</p>
+      <button class="refresh-btn" data-action="refresh">↻ Retry</button>
+    </div>`;
+}
+
+// ── Live data fetch ───────────────────────────────────────────────────────────
+async function fetchLiveData(regionId) {
+  if (!regionId) return;
+  const r = currentRegion;
+
+  try {
+    const [estRes, tsRes] = await Promise.all([
+      fetch(`${API}/estimate/${regionId}`),
+      fetch(`${API}/timeseries/${regionId}`),
+    ]);
+
+    // Guard: user may have switched to a different region while fetching
+    if (currentRegion?.id !== regionId) return;
+
+    const estimate   = estRes.ok  ? await estRes.json()  : null;
+    const timeseries = tsRes.ok   ? await tsRes.json()   : null;
+
+    const liveEl = document.getElementById('live-section');
+    if (!liveEl) return;
+
+    if (!estimate) {
+      liveEl.outerHTML = renderLiveError();
+    } else {
+      liveEl.outerHTML = renderLiveData(estimate, timeseries);
+    }
+  } catch (err) {
+    console.error('Live fetch failed:', err);
+    if (currentRegion?.id !== regionId) return;
+    const liveEl = document.getElementById('live-section');
+    if (liveEl) liveEl.outerHTML = renderLiveError();
+  }
+}
+
+// Event delegation for refresh button (survives innerHTML replacement)
+panelBody.addEventListener('click', e => {
+  if (e.target.closest('[data-action="refresh"]') && currentRegion) {
+    const r = currentRegion;
+    // Replace live section with loading state
+    const liveEl = document.getElementById('live-section');
+    if (liveEl) liveEl.outerHTML = renderLiveLoading();
+    fetchLiveData(r.id);
+  }
+});
+
+// ── Sparkline SVG ─────────────────────────────────────────────────────────────
+function sparklineSVG(monthly) {
+  const vals = monthly.map(d => d.ndvi).filter(v => v != null);
+  if (vals.length < 2) return '';
+
+  const mn = Math.min(...vals) - 0.02;
+  const mx = Math.max(...vals) + 0.02;
+  const W = 280, H = 72, P = 8;
+
+  const sx = i => P + (i / (vals.length - 1)) * (W - P * 2);
+  const sy = v => H - P - ((v - mn) / ((mx - mn) || 1)) * (H - P * 2);
+
+  const pts      = vals.map((v, i) => `${sx(i).toFixed(1)},${sy(v).toFixed(1)}`);
+  const linePath = 'M ' + pts.join(' L ');
+  const areaPath = `${linePath} L ${sx(vals.length-1).toFixed(1)},${H} L ${sx(0).toFixed(1)},${H} Z`;
+
+  const firstMonth = monthly[0]?.month || '';
+  const lastMonth  = monthly[monthly.length - 1]?.month || '';
+
+  const dots = vals.map((v, i) =>
+    `<circle cx="${sx(i).toFixed(1)}" cy="${sy(v).toFixed(1)}" r="2.5" fill="#4ec76a" opacity="0.9"/>`
+  ).join('');
+
+  return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <defs>
+      <linearGradient id="sparkGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%"   stop-color="#4ec76a" stop-opacity="0.28"/>
+        <stop offset="100%" stop-color="#4ec76a" stop-opacity="0.02"/>
+      </linearGradient>
+    </defs>
+    <path d="${areaPath}" fill="url(#sparkGrad)"/>
+    <path d="${linePath}" fill="none" stroke="#4ec76a" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+    ${dots}
+    <text x="${P}" y="${H-1}" fill="rgba(138,136,120,0.75)" font-size="9" font-family="Inter,sans-serif">${firstMonth}</text>
+    <text x="${W-P}" y="${H-1}" text-anchor="end" fill="rgba(138,136,120,0.75)" font-size="9" font-family="Inter,sans-serif">${lastMonth}</text>
+  </svg>`;
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function cap(s) {
+  if (!s) return '';
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+function descNDVI(v) {
+  if (v == null) return '';
+  if (v >= 0.70) return 'Excellent canopy';
+  if (v >= 0.55) return 'Healthy crop';
+  if (v >= 0.40) return 'Moderate growth';
+  if (v >= 0.25) return 'Stressed / sparse';
+  return 'Bare / failed';
+}
+
+function descYield(v) {
+  if (v == null) return '';
+  if (v >= 7.0) return 'Above average';
+  if (v >= 5.0) return 'Average';
+  if (v >= 3.0) return 'Below average';
+  return 'Poor outlook';
+}
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+loadRegions();
+</script>
+</body>
+</html>
