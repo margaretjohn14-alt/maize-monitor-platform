@@ -1,11 +1,19 @@
 """Web API. Run locally with: uvicorn app.main:app --reload"""
 
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.core import estimate_yield, load_regions
-from app.gee import fetch_ndvi
+from app.gee import fetch_ndvi, fetch_ndvi_timeseries
 
 app = FastAPI(title="Maize Monitor", version="0.1.0")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["GET"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/health")
@@ -44,6 +52,28 @@ def estimate(region_id: str) -> dict:
         "season": region["season"],
         "ndvi_series": series,
         "yield_t_per_ha": estimate_yield(series, model["slope"], model["intercept"]),
+        "data_source": region["source"],
+    }
+
+
+@app.get("/timeseries/{region_id}")
+def timeseries(region_id: str) -> dict:
+    data = load_regions()
+    if region_id not in data:
+        raise HTTPException(status_code=404, detail=f"unknown region: {region_id}")
+    region = data[region_id]
+
+    monthly = fetch_ndvi_timeseries(
+        bbox=region["bbox"],
+        start=region["season_start"],
+        end=region["season_end"],
+    )
+
+    return {
+        "region": region_id,
+        "name": region["name"],
+        "season": region["season"],
+        "monthly_ndvi": monthly,
         "data_source": region["source"],
     }
 

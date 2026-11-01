@@ -28,5 +28,35 @@
     "bbox": [35.0, -1.0, 37.5, 1.5],
     "model": {"slope": 8.0, "intercept": -1.0},
     "observations": []
+  },
+  "ethiopia-oromia": {
+    "name": "Oromia, Ethiopia",
+    "season": "2024",
+    "season_start": "2024-06-01",
+    "season_end": "2024-10-31",
+    "source": "Sentinel-2 via Google Earth Engine",
+    "bbox": [36.0, 6.0, 42.0, 12.0],
+    "model": {"slope": 8.0, "intercept": -1.0},
+    "observations": []
+  },
+  "zambia-central": {
+    "name": "Central Province, Zambia",
+    "season": "2024-2025",
+    "season_start": "2024-11-01",
+    "season_end": "2025-04-30",
+    "source": "Sentinel-2 via Google Earth Engine",
+    "bbox": [26.0, -15.0, 32.0, -10.0],
+    "model": {"slope": 8.0, "intercept": -1.0},
+    "observations": []
+  },
+  "argentina-pampas": {
+    "name": "Pampas, Argentina",
+    "season": "2024-2025",
+    "season_start": "2024-10-01",
+    "season_end": "2025-04-30",
+    "source": "Sentinel-2 via Google Earth Engine",
+    "bbox": [-64.0, -38.0, -58.0, -32.0],
+    "model": {"slope": 8.0, "intercept": -1.0},
+    "observations": []
   }
 }
