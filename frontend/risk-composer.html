@@ -394,7 +394,7 @@ const tooltip = document.getElementById('map-tooltip');
 const analysisDiv = document.getElementById('analysis');
 
 function renderAnalysis(country) {
-  const sorted = [...COUNTRIES].sort((a, b) => b.scores[activeDim] - a.scores[activeDim]);
+  const sorted = [...COUNTRIES].sort((a, b) => b.scores[activeDim] - a.scores[activeDim]).slice(0, 15);
   const label = DIM_LABELS[activeDim];
   const crumbCountry = country ? country.name : 'All Countries';
   const crumbColor = country ? riskColor(country.scores[activeDim]) : '#4a90a4';
@@ -512,6 +512,17 @@ async function init() {
   const res = await fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json');
   const world = await res.json();
   worldGeoJSON = topojson.feature(world, world.objects.countries);
+
+  // Fix antimeridian artifacts — normalize longitudes > 180° to negative
+  const fixCoords = arr => arr.map(c => Array.isArray(c[0]) ? fixCoords(c) : [c[0] > 180 ? c[0] - 360 : c[0], c[1]]);
+  worldGeoJSON.features.forEach(f => {
+    if (!f.geometry) return;
+    if (f.geometry.type === 'Polygon')
+      f.geometry.coordinates = fixCoords(f.geometry.coordinates);
+    else if (f.geometry.type === 'MultiPolygon')
+      f.geometry.coordinates = f.geometry.coordinates.map(fixCoords);
+  });
+
   drawChoropleth();
   renderAnalysis(null);
 }
