@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Maize Risk Composer</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      font-family: system-ui, sans-serif;
+      overflow: hidden;
+    }
+
+    body { display: flex; flex-direction: column; }
+
+    /* ── Header ── */
+    header {
+      height: 54px;
+      background: #fff;
+      border-bottom: 1px solid #e0d8d0;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      flex-shrink: 0;
+      z-index: 200;
+      position: relative;
+    }
+
+    .header-logo {
+      font-size: 13px;
+      font-weight: 700;
+      color: #2a2a2a;
+      white-space: nowrap;
+    }
+
+    /* Centered controls */
+    .header-controls {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .ctrl-icon {
+      font-size: 16px;
+      color: #c0392b;
+      line-height: 1;
+    }
+
+    .ctrl-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #4a90a4;
+    }
+
+    .ctrl-select {
+      appearance: none;
+      -webkit-appearance: none;
+      border: 1px solid #d8e4ea;
+      border-radius: 4px;
+      padding: 5px 28px 5px 10px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #2a2a2a;
+      background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%234a90a4'/%3E%3C/svg%3E") no-repeat right 10px center;
+      cursor: pointer;
+      min-width: 140px;
+    }
+
+    .ctrl-select:focus {
+      outline: none;
+      border-color: #4a90a4;
+    }
+
+    .ctrl-divider {
+      width: 1px;
+      height: 20px;
+      background: #e0d8d0;
+    }
+
+    /* ── Main layout ── */
+    main {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+
+    #map-panel {
+      flex: 1;
+      position: relative;
+      background: #e8e4df;
+    }
+
+    #map {
+      position: absolute;
+      inset: 0;
+    }
+
+    #map-panel .leaflet-container {
+      height: 100%;
+      width: 100%;
+    }
+
+    #analysis {
+      width: 400px;
+      flex-shrink: 0;
+      background: #fff;
+      border-left: 1px solid #e0d8d0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    footer {
+      height: 28px;
+      background: #fff;
+      border-top: 1px solid #e0d8d0;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      font-size: 11px;
+      color: #888;
+      flex-shrink: 0;
+    }
+    /* Custom dropdown */
+    .custom-dd { position: relative; }
+    .dd-btn { text-align: left; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    .dd-arrow { font-size: 9px; color: #4a90a4; }
+    .dd-panel { position: absolute; top: calc(100% + 4px); left: 0; min-width: 200px; background: #fff; border: 1px solid #d8e4ea; border-radius: 6px; box-shadow: 0 4px 16px rgba(0,0,0,0.12); z-index: 500; overflow: hidden; }
+    .dd-search { width: 100%; border: none; border-bottom: 1px solid #e8e8e8; padding: 8px 12px; font-size: 13px; outline: none; color: #2a2a2a; }
+    .dd-list { max-height: 220px; overflow-y: auto; }
+    .dd-opt { padding: 8px 14px; font-size: 13px; cursor: pointer; color: #2a2a2a; }
+    .dd-opt:hover, .dd-opt.active { background: #f0f7fa; color: #4a90a4; }
+
+    /* Analysis panel */
+    .analysis-header { padding: 16px 18px 10px; border-bottom: 1px solid #f0ebe4; }
+    .analysis-title { font-size: 18px; font-weight: 700; color: #1a1a1a; }
+    .analysis-crumb { margin-top: 6px; display: flex; align-items: center; gap: 8px; font-size: 12px; }
+    .crumb-tag { background: #9b1d1d; color: #fff; padding: 2px 8px; border-radius: 3px; font-weight: 700; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; }
+    .crumb-sep { color: #aaa; }
+    .crumb-country { color: #555; }
+    .analysis-body { flex: 1; overflow-y: auto; padding: 16px 18px; }
+    .analysis-subtitle { font-size: 13px; font-weight: 700; color: #2a2a2a; margin-bottom: 14px; }
+    .rank-row { margin-bottom: 12px; }
+    .rank-meta { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
+    .rank-name { font-weight: 600; color: #2a2a2a; }
+    .rank-score { color: #888; }
+    .rank-bar-bg { height: 10px; background: #f0ebe4; border-radius: 3px; overflow: hidden; }
+    .rank-bar-fill { height: 100%; border-radius: 3px; transition: width 0.4s ease; }
+    .analysis-empty { color: #aaa; font-size: 13px; padding-top: 20px; text-align: center; }
+    /* ── Tooltip ── */
+    #map-tooltip {
+      position: fixed;
+      pointer-events: none;
+      z-index: 900;
+      background: #fff;
+      border: 1px solid #e0d8d0;
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+      transform: translate(-50%, calc(-100% - 12px));
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <span class="header-logo">🌾 Maize Risk Composer</span>
+
+    <div class="header-controls">
+      <span class="ctrl-icon">⌂</span>
+
+      <label class="ctrl-label" for="country-select">Target Country</label>
+      <div class="custom-dd" id="country-dd">
+        <button class="ctrl-select dd-btn" id="country-btn" type="button">
+          All Countries <span class="dd-arrow">▼</span>
+        </button>
+        <div class="dd-panel" id="country-panel" hidden>
+          <input class="dd-search" id="country-search" placeholder="Search countries…" autocomplete="off">
+          <div class="dd-list" id="country-list"></div>
+        </div>
+      </div>
+      <div class="ctrl-divider"></div>
+
+      <label class="ctrl-label" for="hazard-select">Hazard</label>
+      <select class="ctrl-select" id="hazard-select">
+        <option value="total">Total Risk</option>
+        <option value="exposure">Exposure</option>
+        <option value="vulnerability">Vulnerability</option>
+        <option value="coping">Coping Capacity</option>
+      </select>
+    </div>
+  </header>
+
+  <main>
+    <div id="map-panel">
+      <div id="map"></div>
+      <div id="map-tooltip" hidden></div>
+    </div>
+    <div id="analysis">
+      <!-- analysis panel — Step 3 -->
+    </div>
+  </main>
+
+  <footer>© OpenStreetMap contributors · Maize Monitor Platform</footer>
+
+  <script>
+'use strict';
+
+// Compact format: [iso_numeric, code, name, total, exposure, vulnerability, coping]
+// Scores approximate INFORM Risk Index 2024 (0–1 scale)
+const RAW = [
+  ['004','AF','Afghanistan',       0.86,0.80,0.88,0.90],
+  ['008','AL','Albania',           0.38,0.40,0.36,0.38],
+  ['012','DZ','Algeria',           0.42,0.45,0.40,0.42],
+  ['024','AO','Angola',            0.58,0.52,0.60,0.63],
+  ['031','AZ','Azerbaijan',        0.40,0.40,0.39,0.41],
+  ['032','AR','Argentina',         0.18,0.20,0.15,0.25],
+  ['036','AU','Australia',         0.12,0.15,0.10,0.11],
+  ['040','AT','Austria',           0.07,0.08,0.06,0.07],
+  ['050','BD','Bangladesh',        0.67,0.72,0.64,0.65],
+  ['056','BE','Belgium',           0.07,0.08,0.06,0.07],
+  ['068','BO','Bolivia',           0.55,0.52,0.56,0.58],
+  ['070','BA','Bosnia & Herz.',    0.35,0.36,0.34,0.36],
+  ['072','BW','Botswana',          0.35,0.32,0.36,0.38],
+  ['076','BR','Brazil',            0.42,0.44,0.40,0.43],
+  ['100','BG','Bulgaria',          0.28,0.30,0.27,0.28],
+  ['104','MM','Myanmar',           0.72,0.74,0.71,0.72],
+  ['108','BI','Burundi',           0.75,0.68,0.77,0.79],
+  ['116','KH','Cambodia',          0.60,0.60,0.60,0.61],
+  ['120','CM','Cameroon',          0.62,0.56,0.63,0.67],
+  ['124','CA','Canada',            0.08,0.08,0.07,0.08],
+  ['140','CF','Central African Rep.',0.83,0.72,0.88,0.89],
+  ['144','LK','Sri Lanka',         0.45,0.48,0.43,0.44],
+  ['148','TD','Chad',              0.82,0.74,0.84,0.88],
+  ['152','CL','Chile',             0.28,0.30,0.26,0.28],
+  ['156','CN','China',             0.42,0.48,0.38,0.40],
+  ['170','CO','Colombia',          0.55,0.54,0.55,0.57],
+  ['174','KM','Comoros',           0.55,0.55,0.56,0.54],
+  ['178','CG','Congo',             0.65,0.58,0.68,0.70],
+  ['180','CD','DR Congo',          0.84,0.79,0.86,0.87],
+  ['188','CR','Costa Rica',        0.32,0.32,0.31,0.33],
+  ['191','HR','Croatia',           0.18,0.19,0.17,0.18],
+  ['192','CU','Cuba',              0.42,0.44,0.40,0.43],
+  ['203','CZ','Czech Republic',    0.10,0.11,0.09,0.10],
+  ['204','BJ','Benin',             0.58,0.53,0.59,0.62],
+  ['208','DK','Denmark',           0.06,0.06,0.05,0.06],
+  ['214','DO','Dominican Republic',0.42,0.44,0.40,0.43],
+  ['218','EC','Ecuador',           0.50,0.50,0.50,0.51],
+  ['222','SV','El Salvador',       0.60,0.60,0.60,0.61],
+  ['226','GQ','Equatorial Guinea', 0.42,0.38,0.44,0.46],
+  ['231','ET','Ethiopia',          0.65,0.70,0.60,0.55],
+  ['232','ER','Eritrea',           0.76,0.65,0.80,0.82],
+  ['242','FJ','Fiji',              0.45,0.50,0.42,0.44],
+  ['246','FI','Finland',           0.06,0.06,0.05,0.06],
+  ['250','FR','France',            0.10,0.11,0.09,0.10],
+  ['262','DJ','Djibouti',          0.58,0.55,0.59,0.61],
+  ['266','GA','Gabon',             0.40,0.36,0.42,0.43],
+  ['268','GE','Georgia',           0.40,0.40,0.39,0.41],
+  ['270','GM','Gambia',            0.56,0.50,0.58,0.61],
+  ['276','DE','Germany',           0.07,0.07,0.06,0.07],
+  ['288','GH','Ghana',             0.50,0.48,0.51,0.52],
+  ['300','GR','Greece',            0.18,0.20,0.16,0.18],
+  ['320','GT','Guatemala',         0.62,0.60,0.62,0.64],
+  ['324','GN','Guinea',            0.67,0.58,0.70,0.72],
+  ['332','HT','Haiti',             0.82,0.78,0.83,0.86],
+  ['340','HN','Honduras',          0.65,0.62,0.66,0.68],
+  ['348','HU','Hungary',           0.15,0.16,0.14,0.15],
+  ['356','IN','India',             0.58,0.63,0.55,0.57],
+  ['360','ID','Indonesia',         0.58,0.64,0.55,0.56],
+  ['364','IR','Iran',              0.55,0.58,0.53,0.55],
+  ['368','IQ','Iraq',              0.65,0.62,0.66,0.68],
+  ['372','IE','Ireland',           0.08,0.08,0.07,0.08],
+  ['376','IL','Israel',            0.25,0.26,0.24,0.25],
+  ['380','IT','Italy',             0.15,0.17,0.13,0.15],
+  ['384','CI','Ivory Coast',       0.58,0.55,0.59,0.61],
+  ['388','JM','Jamaica',           0.40,0.42,0.38,0.40],
+  ['392','JP','Japan',             0.22,0.35,0.12,0.18],
+  ['398','KZ','Kazakhstan',        0.35,0.32,0.36,0.37],
+  ['400','JO','Jordan',            0.45,0.45,0.44,0.46],
+  ['404','KE','Kenya',             0.72,0.78,0.68,0.62],
+  ['408','KP','North Korea',       0.60,0.55,0.62,0.65],
+  ['410','KR','South Korea',       0.18,0.20,0.16,0.18],
+  ['417','KG','Kyrgyzstan',        0.55,0.52,0.56,0.58],
+  ['418','LA','Laos',              0.58,0.58,0.58,0.58],
+  ['422','LB','Lebanon',           0.65,0.58,0.68,0.70],
+  ['426','LS','Lesotho',           0.52,0.45,0.55,0.57],
+  ['430','LR','Liberia',           0.69,0.60,0.72,0.74],
+  ['434','LY','Libya',             0.62,0.58,0.63,0.66],
+  ['450','MG','Madagascar',        0.68,0.70,0.67,0.68],
+  ['454','MW','Malawi',            0.66,0.62,0.67,0.70],
+  ['458','MY','Malaysia',          0.30,0.33,0.28,0.29],
+  ['466','ML','Mali',              0.79,0.75,0.81,0.82],
+  ['478','MR','Mauritania',        0.62,0.60,0.62,0.65],
+  ['484','MX','Mexico',            0.40,0.42,0.38,0.40],
+  ['496','MN','Mongolia',          0.40,0.38,0.41,0.42],
+  ['498','MD','Moldova',           0.40,0.35,0.42,0.45],
+  ['504','MA','Morocco',           0.38,0.40,0.37,0.38],
+  ['508','MZ','Mozambique',        0.71,0.72,0.72,0.70],
+  ['516','NA','Namibia',           0.42,0.38,0.43,0.46],
+  ['524','NP','Nepal',             0.65,0.68,0.63,0.64],
+  ['528','NL','Netherlands',       0.08,0.09,0.07,0.08],
+  ['548','VU','Vanuatu',           0.60,0.68,0.56,0.57],
+  ['558','NI','Nicaragua',         0.58,0.56,0.59,0.61],
+  ['562','NE','Niger',             0.78,0.73,0.80,0.82],
+  ['566','NG','Nigeria',           0.65,0.68,0.63,0.65],
+  ['578','NO','Norway',            0.05,0.05,0.05,0.05],
+  ['586','PK','Pakistan',          0.68,0.72,0.65,0.67],
+  ['591','PA','Panama',            0.38,0.38,0.37,0.39],
+  ['598','PG','Papua New Guinea',  0.65,0.62,0.66,0.68],
+  ['600','PY','Paraguay',          0.45,0.42,0.46,0.48],
+  ['604','PE','Peru',              0.50,0.52,0.49,0.50],
+  ['608','PH','Philippines',       0.65,0.74,0.62,0.60],
+  ['616','PL','Poland',            0.18,0.18,0.17,0.19],
+  ['620','PT','Portugal',          0.15,0.16,0.14,0.15],
+  ['624','GW','Guinea-Bissau',     0.70,0.62,0.73,0.74],
+  ['626','TL','Timor-Leste',       0.62,0.60,0.63,0.65],
+  ['634','QA','Qatar',             0.20,0.20,0.19,0.21],
+  ['642','RO','Romania',           0.28,0.30,0.27,0.28],
+  ['643','RU','Russia',            0.30,0.28,0.30,0.33],
+  ['646','RW','Rwanda',            0.55,0.48,0.58,0.60],
+  ['682','SA','Saudi Arabia',      0.28,0.28,0.27,0.29],
+  ['686','SN','Senegal',           0.55,0.52,0.56,0.57],
+  ['694','SL','Sierra Leone',      0.70,0.63,0.73,0.73],
+  ['703','SK','Slovakia',          0.12,0.13,0.11,0.12],
+  ['704','VN','Vietnam',           0.50,0.55,0.47,0.48],
+  ['706','SO','Somalia',           0.87,0.82,0.89,0.88],
+  ['710','ZA','South Africa',      0.47,0.51,0.43,0.43],
+  ['716','ZW','Zimbabwe',          0.72,0.63,0.75,0.77],
+  ['724','ES','Spain',             0.12,0.13,0.11,0.12],
+  ['728','SS','South Sudan',       0.86,0.78,0.88,0.90],
+  ['729','SD','Sudan',             0.80,0.74,0.81,0.84],
+  ['740','SR','Suriname',          0.42,0.40,0.43,0.45],
+  ['748','SZ','Eswatini',          0.48,0.42,0.50,0.52],
+  ['752','SE','Sweden',            0.06,0.06,0.05,0.06],
+  ['756','CH','Switzerland',       0.06,0.06,0.05,0.06],
+  ['760','SY','Syria',             0.84,0.78,0.86,0.88],
+  ['762','TJ','Tajikistan',        0.65,0.60,0.67,0.70],
+  ['764','TH','Thailand',          0.40,0.43,0.38,0.39],
+  ['768','TG','Togo',              0.60,0.55,0.61,0.63],
+  ['788','TN','Tunisia',           0.35,0.36,0.34,0.35],
+  ['792','TR','Turkey',            0.42,0.46,0.39,0.41],
+  ['800','UG','Uganda',            0.64,0.60,0.65,0.67],
+  ['804','UA','Ukraine',           0.45,0.40,0.47,0.50],
+  ['818','EG','Egypt',             0.45,0.48,0.43,0.44],
+  ['826','GB','United Kingdom',    0.08,0.09,0.07,0.08],
+  ['834','TZ','Tanzania',          0.60,0.58,0.61,0.62],
+  ['840','US','United States',     0.10,0.11,0.09,0.10],
+  ['854','BF','Burkina Faso',      0.72,0.68,0.73,0.76],
+  ['858','UY','Uruguay',           0.20,0.20,0.19,0.21],
+  ['860','UZ','Uzbekistan',        0.48,0.45,0.49,0.51],
+  ['862','VE','Venezuela',         0.62,0.58,0.63,0.66],
+  ['887','YE','Yemen',             0.87,0.82,0.89,0.90],
+  ['894','ZM','Zambia',            0.45,0.48,0.42,0.38],
+];
+
+const COUNTRIES = RAW.map(([iso,code,name,total,exposure,vulnerability,coping]) => ({
+  iso, code, name, scores: { total, exposure, vulnerability, coping }
+}));
+const BY_ISO  = Object.fromEntries(COUNTRIES.map(c => [c.iso, c]));
+const DIM_LABELS = { total: 'Total Risk', exposure: 'Exposure', vulnerability: 'Vulnerability', coping: 'Coping Capacity' };
+
+function riskColor(score) {
+  if (score >= 0.60) return '#9b1d1d';
+  if (score >= 0.40) return '#c2550a';
+  if (score >= 0.20) return '#d4830a';
+  return '#d4a86a';
+}
+function riskLabel(score) {
+  if (score >= 0.60) return 'Very High';
+  if (score >= 0.40) return 'High';
+  if (score >= 0.20) return 'Moderate';
+  return 'Low';
+}
+
+let activeDim = 'total', activeFilter = 'all', selectedCountry = null;
+let choropleth = null, worldGeoJSON = null;
+
+const map = L.map('map', { zoomControl: false }).setView([20, 15], 2);
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', { attribution: 'Tiles © Esri', maxZoom: 16 }).addTo(map);
+L.control.zoom({ position: 'topright' }).addTo(map);
+
+const tooltip = document.getElementById('map-tooltip');
+const analysisDiv = document.getElementById('analysis');
+
+function renderAnalysis(country) {
+  const sorted = [...COUNTRIES].sort((a, b) => b.scores[activeDim] - a.scores[activeDim]);
+  const label = DIM_LABELS[activeDim];
+  const crumbCountry = country ? country.name : 'All Countries';
+  const crumbColor = country ? riskColor(country.scores[activeDim]) : '#4a90a4';
+  analysisDiv.innerHTML = `
+    <div class="analysis-header">
+      <div class="analysis-title">Analysis</div>
+      <div class="analysis-crumb">
+        <span class="crumb-tag" style="background:${crumbColor}">${label}</span>
+        <span class="crumb-sep">|</span>
+        <span class="crumb-country">${crumbCountry}</span>
+      </div>
+    </div>
+    <div class="analysis-body">
+      <div class="analysis-subtitle">Ranked by ${label}</div>
+      ${sorted.map((c, i) => {
+        const score = c.scores[activeDim];
+        const isSelected = country && country.code === c.code;
+        return `<div class="rank-row" style="${isSelected ? 'background:#fdf8f4;border-radius:6px;padding:4px 6px;margin:0 -6px 12px;' : ''}">
+          <div class="rank-meta">
+            <span class="rank-name">${i + 1}. ${c.name}</span>
+            <span class="rank-score" style="color:${riskColor(score)};font-weight:600">${riskLabel(score)} · ${score.toFixed(2)}</span>
+          </div>
+          <div class="rank-bar-bg">
+            <div class="rank-bar-fill" style="width:${(score * 100).toFixed(1)}%;background:${riskColor(score)}"></div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function drawChoropleth() {
+  if (!worldGeoJSON) return;
+  if (choropleth) map.removeLayer(choropleth);
+  choropleth = L.geoJSON(worldGeoJSON, {
+    style: f => {
+      const c = BY_ISO[String(f.id)];
+      if (!c) return { fillColor: '#d8d4cf', fillOpacity: 0.25, color: '#c8c4bf', weight: 0.5, opacity: 0.5 };
+      const isSelected = selectedCountry && selectedCountry.code === c.code;
+      return { fillColor: riskColor(c.scores[activeDim]), fillOpacity: 0.78, color: isSelected ? '#333' : '#fff', weight: isSelected ? 2.5 : 0.8, opacity: 0.6 };
+    },
+    onEachFeature: (f, layer) => {
+      const c = BY_ISO[String(f.id)];
+      if (!c) return;
+      layer.on('mouseover', e => {
+        const score = c.scores[activeDim];
+        tooltip.innerHTML = `<strong>${c.name}</strong><div style="margin-top:5px"><span style="color:${riskColor(score)};font-weight:600">${riskLabel(score)}</span><span style="color:#aaa"> · ${score.toFixed(2)}</span></div>`;
+        tooltip.hidden = false;
+        layer.setStyle({ weight: 2.5, color: '#333' });
+      });
+      layer.on('mousemove', e => { tooltip.style.left = e.originalEvent.clientX + 'px'; tooltip.style.top = e.originalEvent.clientY + 'px'; });
+      layer.on('mouseout', () => { tooltip.hidden = true; choropleth.resetStyle(layer); });
+      layer.on('click', () => {
+        selectedCountry = c;
+        setDDLabel(c.name);
+        activeFilter = c.code;
+        drawChoropleth();
+        map.fitBounds(layer.getBounds(), { padding: [60, 60] });
+        renderAnalysis(c);
+      });
+    }
+  }).addTo(map);
+  if (activeFilter !== 'all') {
+    choropleth.eachLayer(l => {
+      if (BY_ISO[String(l.feature.id)]?.code === activeFilter)
+        map.fitBounds(l.getBounds(), { padding: [60, 60] });
+    });
+  }
+}
+
+// ── Custom searchable dropdown ──────────────────────────────────────────
+const ddBtn    = document.getElementById('country-btn');
+const ddPanel  = document.getElementById('country-panel');
+const ddSearch = document.getElementById('country-search');
+const ddList   = document.getElementById('country-list');
+const ALL_OPTS = [{ code: 'all', name: 'All Countries' }, ...COUNTRIES];
+
+function setDDLabel(name) {
+  ddBtn.innerHTML = `${name} <span class="dd-arrow">▼</span>`;
+}
+function renderDDOptions(filter = '') {
+  const q = filter.toLowerCase();
+  ddList.innerHTML = ALL_OPTS
+    .filter(o => o.name.toLowerCase().includes(q))
+    .map(o => `<div class="dd-opt${o.code === activeFilter ? ' active' : ''}" data-code="${o.code}">${o.name}</div>`)
+    .join('');
+}
+
+ddBtn.addEventListener('click', e => {
+  e.stopPropagation();
+  ddPanel.hidden = !ddPanel.hidden;
+  if (!ddPanel.hidden) { renderDDOptions(); ddSearch.value = ''; ddSearch.focus(); }
+});
+ddSearch.addEventListener('input', () => renderDDOptions(ddSearch.value));
+ddList.addEventListener('click', e => {
+  const opt = e.target.closest('.dd-opt');
+  if (!opt) return;
+  const code = opt.dataset.code;
+  setDDLabel(opt.textContent);
+  ddPanel.hidden = true;
+  activeFilter = code;
+  selectedCountry = code === 'all' ? null : COUNTRIES.find(c => c.code === code);
+  drawChoropleth();
+  if (code === 'all') map.setView([20, 15], 2);
+  renderAnalysis(selectedCountry);
+});
+document.addEventListener('click', () => { ddPanel.hidden = true; });
+
+document.getElementById('hazard-select').addEventListener('change', e => {
+  activeDim = e.target.value;
+  drawChoropleth();
+  renderAnalysis(selectedCountry);
+});
+
+async function init() {
+  const res = await fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json');
+  const world = await res.json();
+  worldGeoJSON = topojson.feature(world, world.objects.countries);
+  drawChoropleth();
+  renderAnalysis(null);
+}
+init();
+</script>
+
+</body>
+</html>
