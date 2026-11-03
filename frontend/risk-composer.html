@@ -111,13 +111,15 @@
     }
 
     #analysis {
-      width: 400px;
-      flex-shrink: 0;
-      background: #fff;
-      border-left: 1px solid #e0d8d0;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
+        width: 400px;
+        min-width: 400px;
+        display: flex;
+        flex-direction: column;
+        border-left: 1px solid #f0ebe4;
+        background: #fff;
+        overflow: hidden;
+        position: relative;   /* add this */
+        z-index: 10;          /* add this */
     }
 
     footer {
@@ -513,14 +515,24 @@ async function init() {
   const world = await res.json();
   worldGeoJSON = topojson.feature(world, world.objects.countries);
 
-  // Fix antimeridian artifacts — normalize longitudes > 180° to negative
-  const fixCoords = arr => arr.map(c => Array.isArray(c[0]) ? fixCoords(c) : [c[0] > 180 ? c[0] - 360 : c[0], c[1]]);
+  // Fix antimeridian: adjust each ring so no consecutive jump > 180°
+  function fixRing(ring) {
+    const out = [ring[0].slice()];
+    for (let i = 1; i < ring.length; i++) {
+      let lng = ring[i][0];
+      const prev = out[i - 1][0];
+      while (lng - prev > 180) lng -= 360;
+      while (lng - prev < -180) lng += 360;
+      out.push([lng, ring[i][1]]);
+    }
+    return out;
+  }
   worldGeoJSON.features.forEach(f => {
-    if (!f.geometry) return;
-    if (f.geometry.type === 'Polygon')
-      f.geometry.coordinates = fixCoords(f.geometry.coordinates);
-    else if (f.geometry.type === 'MultiPolygon')
-      f.geometry.coordinates = f.geometry.coordinates.map(fixCoords);
+    const g = f.geometry;
+    if (!g) return;
+    const fixPoly = p => p.map(fixRing);
+    if (g.type === 'Polygon') g.coordinates = fixPoly(g.coordinates);
+    if (g.type === 'MultiPolygon') g.coordinates = g.coordinates.map(fixPoly);
   });
 
   drawChoropleth();
