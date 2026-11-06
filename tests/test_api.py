@@ -15,7 +15,7 @@ def test_health():
 
 def test_regions_lists_ids_and_names():
     body = client.get("/regions").json()
-    assert {"id": "free-state", "name": "Free State, South Africa"} in body
+    assert any(r["id"] == "free-state" and r["name"] == "Free State, South Africa" for r in body)
 
 
 def test_estimate_returns_series_and_yield():
