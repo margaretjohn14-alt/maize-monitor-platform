@@ -6,6 +6,8 @@ with Helm, and updated by a weekly scheduled job.
 
 Inspired by operational crop monitoring services. Not affiliated with any company or project.
 
+📖 [Mato Grosso 2024–25 case study](https://margaretjohn14-alt.github.io/maize-monitor-platform/mato-grosso-2025.html) — NDVI signal, EUDR compliance, and drought stress from Sentinel-2
+
 ## Status
 
 | Phase | Topic | State |

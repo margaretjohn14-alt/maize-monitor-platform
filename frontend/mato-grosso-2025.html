@@ -1,0 +1,955 @@
+<title>Mato Grosso 2025</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,600&family=DM+Sans:wght@400;500&display=swap">
+
+<style>
+/* ── Tokens ── */
+:root {
+  --bg:#f3f0e7; --bg-2:#e9e5da; --bg-3:#dedad0;
+  --fg:#18201a; --fg-mid:#485048; --fg-muted:#787f76;
+  --rule:rgba(24,32,26,.11);
+  --green:#2b7832; --amber:#bf7010; --red:#c43030; --blue:#2857a0;
+  color-scheme:light;
+}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#090d09; --bg-2:#0f1410; --bg-3:#161c16;
+  --fg:#dcd8cc; --fg-mid:#a4a898; --fg-muted:#787a70;
+  --rule:rgba(255,255,255,.08);
+  --green:#68bf68; --amber:#d49920; --red:#e05050; --blue:#7ab4e8;
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#090d09; --bg-2:#0f1410; --bg-3:#161c16;
+  --fg:#dcd8cc; --fg-mid:#a4a898; --fg-muted:#787a70;
+  --rule:rgba(255,255,255,.08);
+  --green:#68bf68; --amber:#d49920; --red:#e05050; --blue:#7ab4e8;
+  color-scheme:dark;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{overflow-x:hidden}
+body{
+  font-family:'DM Sans',system-ui,sans-serif;
+  background:var(--bg); color:var(--fg);
+  font-size:16px; line-height:1.65;
+}
+
+/* ── Hero (forced dark, full-viewport) ── */
+.app-hero{
+  width:100vw;
+  height:100svh; min-height:520px;
+  display:flex; flex-direction:column;
+  background:#090d09; color:#dcd8cc;
+  position:relative;
+}
+.app-main{flex:1; display:flex; flex-direction:row; min-height:0; overflow:hidden}
+
+/* Left panel */
+.app-panel{
+  width:300px; flex-shrink:0;
+  background:rgba(9,13,9,.92);
+  border-right:1px solid rgba(255,255,255,.08);
+  display:flex; flex-direction:column;
+  overflow-y:auto; overflow-x:hidden;
+  padding:20px 18px 16px;
+  gap:0;
+  z-index:2;
+}
+.ap-brand{
+  font-size:10px; font-weight:500; letter-spacing:.1em;
+  text-transform:uppercase; color:#68bf68;
+  margin-bottom:14px; display:flex; align-items:center; gap:6px;
+}
+.ap-h1{
+  font-family:'Fraunces',Georgia,serif;
+  font-size:clamp(18px,2.2vw,24px);
+  font-weight:700; line-height:1.15; letter-spacing:-.02em;
+  text-wrap:balance; color:#dcd8cc;
+  margin-bottom:10px;
+}
+.ap-h1 em{font-style:italic; color:#e05050; font-weight:600}
+.ap-lead{font-size:12px; color:#a4a898; line-height:1.6; margin-bottom:16px}
+
+/* Panel sections */
+.ap-section{
+  border-top:1px solid rgba(255,255,255,.07);
+  padding-top:14px; margin-top:14px;
+}
+.ap-label{
+  font-size:9px; font-weight:500; letter-spacing:.1em;
+  text-transform:uppercase; color:#787a70;
+  margin-bottom:10px;
+}
+.ap-row{
+  display:flex; justify-content:space-between;
+  align-items:baseline; font-size:12px;
+  color:#a4a898; margin-bottom:6px;
+}
+.ap-row strong{color:#dcd8cc; font-weight:500}
+.ap-badge-nc{
+  font-size:9px; font-weight:600; letter-spacing:.05em;
+  padding:2px 7px; border-radius:2px;
+  background:rgba(224,80,80,.18); color:#e05050;
+}
+.ap-badge-hl{
+  font-size:9px; font-weight:500; letter-spacing:.05em;
+  padding:2px 7px; border-radius:2px;
+  background:rgba(104,191,104,.12); color:#68bf68;
+}
+
+/* NDVI dynamic display */
+.ap-ndvi-val{
+  font-family:'Fraunces',Georgia,serif;
+  font-size:40px; font-weight:700; letter-spacing:-.04em;
+  line-height:1; color:#dcd8cc;
+  font-variant-numeric:tabular-nums;
+}
+.ap-ndvi-change{
+  font-size:11px; color:#e05050; font-weight:500; margin-top:4px;
+}
+.ap-ndvi-month{
+  font-size:10px; letter-spacing:.06em; text-transform:uppercase;
+  color:#787a70; margin-top:2px;
+}
+
+/* Sparkline */
+.ap-spark{margin:12px 0 2px; overflow:visible}
+.sp-ref{stroke:#68bf68; stroke-width:1; fill:none; opacity:.4}
+.sp-szn{stroke:#d49920; stroke-width:1.5; fill:none}
+.sp-dot{fill:#d49920}
+.sp-dot-ref{fill:#68bf68; opacity:.6}
+.sp-vline{stroke:rgba(255,255,255,.2); stroke-width:1; stroke-dasharray:2 2}
+
+/* Source mono */
+.ap-source{
+  font-size:10px; font-family:'SF Mono','Fira Code','Courier New',monospace;
+  color:#525a52; line-height:1.7;
+}
+
+/* Map pane */
+#hero-map{flex:1; background:#0d1a0d; min-width:0}
+
+/* Bottom timeline bar */
+.app-bar{
+  flex-shrink:0; height:68px;
+  background:rgba(9,13,9,.96);
+  border-top:1px solid rgba(255,255,255,.07);
+  display:flex; align-items:center;
+  padding:0 20px;
+  gap:16px;
+}
+.bar-label{
+  font-size:9px; font-weight:500; letter-spacing:.1em;
+  text-transform:uppercase; color:#525a52;
+  white-space:nowrap; flex-shrink:0;
+}
+.bar-months{
+  display:flex; gap:0; flex:1; position:relative;
+}
+.bar-month{
+  flex:1; text-align:center;
+  font-size:10px; letter-spacing:.04em; text-transform:uppercase;
+  color:#525a52; padding:4px 0;
+  cursor:pointer; transition:color .15s;
+  user-select:none;
+}
+.bar-month.active{color:#68bf68; font-weight:500}
+.bar-month:hover{color:#a4a898}
+.bar-slider-wrap{flex:1; display:none}/* hidden – using month clicks */
+
+/* Scroll-down cue */
+.app-scroll-cue{
+  position:absolute; bottom:78px; right:20px;
+  font-size:11px; color:rgba(255,255,255,.25);
+  letter-spacing:.06em; text-transform:uppercase;
+  display:flex; align-items:center; gap:5px;
+  pointer-events:none;
+}
+.scroll-arrow{
+  width:18px; height:18px; border:1px solid rgba(255,255,255,.18);
+  border-radius:50%; display:flex; align-items:center; justify-content:center;
+  font-size:9px;
+}
+
+/* ── Story sections below hero ── */
+.wrap{
+  max-width:680px; margin:0 auto;
+  padding-block:40px 100px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+
+/* Masthead */
+.mast{
+  display:flex; align-items:center; justify-content:space-between;
+  padding-bottom:24px; border-bottom:1px solid var(--rule);
+  margin-bottom:36px; flex-wrap:wrap; gap:10px;
+}
+.mast-name{
+  font-family:'Fraunces',Georgia,serif;
+  font-weight:600; font-size:15px; color:var(--green);
+  text-decoration:none; letter-spacing:-.01em;
+}
+.mast-links{display:flex;gap:20px}
+.mast-links a{font-size:12px;color:var(--fg-muted);text-decoration:none}
+.mast-links a:hover{color:var(--fg)}
+
+/* Eyebrow */
+.eyebrow{
+  font-size:11px;font-weight:500;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--fg-muted);
+  margin-bottom:16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+}
+.eyebrow .sep{opacity:.4}
+.badge-nc{
+  font-size:10px;font-weight:600;letter-spacing:.04em;
+  padding:2px 7px;border-radius:3px;
+  background:rgba(196,48,48,.12);color:var(--red);text-transform:none;
+}
+h1{
+  font-family:'Fraunces',Georgia,serif;
+  font-size:clamp(27px,5.5vw,46px);font-weight:700;
+  line-height:1.1;letter-spacing:-.025em;text-wrap:balance;margin-bottom:20px;
+}
+h1 em{font-style:italic;color:var(--red);font-weight:600}
+.standfirst{
+  font-size:17px;line-height:1.62;color:var(--fg-mid);
+  padding-bottom:32px;border-bottom:1px solid var(--rule);
+  margin-bottom:36px;max-width:60ch;
+}
+.section-num{
+  font-size:10px;font-weight:500;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--fg-muted);
+  margin-top:44px;margin-bottom:6px;display:block;
+}
+h2{
+  font-family:'Fraunces',Georgia,serif;
+  font-size:22px;font-weight:600;letter-spacing:-.015em;
+  text-wrap:balance;margin-bottom:14px;
+}
+p{max-width:65ch;margin-bottom:16px}
+strong{font-weight:500}
+code{
+  font-family:'SF Mono','Fira Code',monospace;font-size:12px;
+  background:var(--bg-3);padding:2px 5px;border-radius:3px;color:var(--blue);
+}
+/* Stats */
+.stat-row{
+  display:flex;gap:36px;margin:32px 0;flex-wrap:wrap;
+  padding:24px 20px;background:var(--bg-2);
+  border:1px solid var(--rule);border-radius:6px;
+}
+.stat{flex:0 0 auto}
+.stat-num{
+  font-family:'Fraunces',Georgia,serif;
+  font-size:44px;font-weight:700;letter-spacing:-.04em;
+  line-height:1;display:block;font-variant-numeric:tabular-nums;
+}
+.stat-num.red{color:var(--red)}.stat-num.amber{color:var(--amber)}
+.stat-unit{
+  font-size:11px;text-transform:uppercase;letter-spacing:.06em;
+  color:var(--fg-muted);display:block;margin-top:5px;max-width:18ch;
+}
+/* Fig */
+.fig{
+  background:var(--bg-2);border:1px solid var(--rule);
+  border-radius:6px;padding:20px 20px 14px;margin:28px 0;overflow-x:auto;
+}
+.fig-label{
+  font-size:10px;font-weight:500;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--fg-muted);margin-bottom:14px;
+}
+.fig-cap{font-size:12px;color:var(--fg-muted);margin-top:10px;max-width:60ch;line-height:1.55}
+/* SVG chart */
+.c-grid{stroke:var(--rule);stroke-width:.5;fill:none}
+.c-label{fill:var(--fg-muted);font-size:9px;font-family:'DM Sans',sans-serif}
+.c-label-m{fill:var(--fg-muted);font-size:9.5px;font-family:'DM Sans',sans-serif}
+.c-base-a{fill:var(--green);fill-opacity:.08}
+.c-base-l{stroke:var(--green);stroke-width:1.5;fill:none;stroke-linejoin:round;stroke-linecap:round}
+.c-base-d{fill:var(--green)}
+.c-szn-a{fill:var(--amber);fill-opacity:.14}
+.c-szn-l{stroke:var(--amber);stroke-width:2;fill:none;stroke-linejoin:round;stroke-linecap:round}
+.c-szn-d{fill:var(--amber)}
+.c-leg-g{fill:var(--green)}.c-leg-a{fill:var(--amber)}
+.c-leg-t{fill:var(--fg-muted);font-size:10px;font-family:'DM Sans',sans-serif}
+.chart-svg{width:100%;height:auto;display:block;overflow:visible}
+/* Pipeline */
+.pipeline{
+  display:flex;align-items:center;gap:4px;margin:24px 0;
+  overflow-x:auto;padding-bottom:4px;
+}
+.p-step{
+  background:var(--bg-2);border:1px solid var(--rule);border-radius:6px;
+  padding:12px 10px 10px;text-align:center;min-width:84px;flex:1 1 84px;
+}
+.p-icon{font-size:18px;display:block;margin-bottom:5px}
+.p-name{font-size:11px;font-weight:500;display:block}
+.p-tech{font-size:10px;color:var(--fg-muted);display:block;margin-top:2px}
+.p-arr{font-size:13px;color:var(--fg-muted);flex-shrink:0;padding-inline:2px}
+/* Table */
+.tbl-wrap{overflow-x:auto;margin:20px 0}
+.rtbl{width:100%;border-collapse:collapse;font-size:13px;min-width:460px}
+.rtbl th{
+  text-align:left;font-size:10px;font-weight:500;letter-spacing:.07em;
+  text-transform:uppercase;color:var(--fg-muted);
+  padding:0 16px 8px 0;border-bottom:1px solid var(--rule);
+}
+.rtbl td{padding:9px 16px 9px 0;border-bottom:1px solid var(--rule);font-variant-numeric:tabular-nums}
+.rtbl tr:last-child td{border-bottom:none}
+.rtbl .hl td{background:var(--bg-2);font-weight:500}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;vertical-align:middle}
+/* Limits */
+.limits{
+  border-left:3px solid var(--amber);background:var(--bg-2);
+  padding:16px 18px;border-radius:0 5px 5px 0;margin:28px 0;font-size:14px;
+}
+.limits-h{font-size:10px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--amber);margin-bottom:10px}
+.limits ul{padding-left:18px}
+.limits li{margin-bottom:8px;color:var(--fg-mid)}
+/* Panels */
+.panels{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin:24px 0 32px}
+.panel{
+  background:var(--bg-2);border:1px solid var(--rule);border-radius:6px;
+  padding:16px;text-decoration:none;color:var(--fg);
+  display:flex;flex-direction:column;gap:6px;transition:border-color .15s;
+}
+.panel:hover{border-color:var(--green)}
+.panel-icon{font-size:20px}
+.panel-name{font-weight:500;font-size:14px}
+.panel-desc{font-size:12px;color:var(--fg-muted);line-height:1.5}
+.panel-arrow{font-size:12px;color:var(--green);margin-top:auto;padding-top:8px}
+/* CTA */
+.cta-block{margin-top:44px;padding-top:32px;border-top:1px solid var(--rule)}
+.cta-label{font-size:10px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--fg-muted);margin-bottom:10px}
+.cta-link{
+  font-family:'Fraunces',Georgia,serif;font-size:20px;font-weight:600;
+  color:var(--green);text-decoration:none;letter-spacing:-.01em;
+  border-bottom:2px solid var(--green);padding-bottom:1px;
+}
+.cta-link:hover{opacity:.75}
+.cta-sub{margin-top:10px;font-size:13px;color:var(--fg-muted)}
+/* Footer */
+footer{
+  margin-top:56px;padding-top:20px;border-top:1px solid var(--rule);
+  display:flex;gap:20px;flex-wrap:wrap;font-size:11px;color:var(--fg-muted);
+}
+footer a{color:var(--fg-muted);text-decoration:none;border-bottom:1px solid var(--rule)}
+footer a:hover{color:var(--fg)}
+
+/* Leaflet core (inlined — external CSS blocked in sandbox) */
+.leaflet-pane,.leaflet-tile,.leaflet-marker-icon,.leaflet-marker-shadow,.leaflet-tile-container,.leaflet-pane>svg,.leaflet-pane>canvas,.leaflet-zoom-box,.leaflet-image-layer,.leaflet-layer{position:absolute;left:0;top:0}
+.leaflet-container{overflow:hidden;outline:0;cursor:grab}
+.leaflet-container.leaflet-drag-target{cursor:grabbing}
+.leaflet-tile,.leaflet-marker-icon,.leaflet-marker-shadow{user-select:none;-webkit-user-drag:none}
+.leaflet-tile::selection{background:transparent}
+.leaflet-container img{padding:0;max-width:none!important;max-height:none!important}
+.leaflet-tile-pane{z-index:200}.leaflet-overlay-pane{z-index:400}.leaflet-shadow-pane{z-index:500}.leaflet-marker-pane{z-index:600}.leaflet-tooltip-pane{z-index:650}.leaflet-popup-pane{z-index:700}
+.leaflet-map-pane,.leaflet-map-pane svg,.leaflet-map-pane canvas{z-index:1}
+.leaflet-container{background:#0d1a0d;position:relative}
+.leaflet-tile{filter:inherit;visibility:hidden}.leaflet-tile-loaded{visibility:inherit}
+.leaflet-zoom-anim .leaflet-zoom-animated{transition:transform .25s cubic-bezier(0,0,.25,1)}
+.leaflet-popup{position:absolute;text-align:center;margin-bottom:20px}
+.leaflet-popup-content-wrapper{padding:1px;text-align:left;border-radius:6px;background:#111811;color:#dcd8cc;box-shadow:0 3px 14px rgba(0,0,0,.7)}
+.leaflet-popup-content{margin:12px 20px 12px 16px;line-height:1.5;font-size:13px;font-family:'DM Sans',system-ui,sans-serif}
+.leaflet-popup-tip-container{margin:0 auto;width:40px;height:20px;position:relative;overflow:hidden}
+.leaflet-popup-tip{width:17px;height:17px;padding:1px;margin:-10px auto 0;transform:rotate(45deg);background:#111811;box-shadow:0 3px 14px rgba(0,0,0,.7)}
+.leaflet-popup-close-button{position:absolute;top:0;right:2px;width:24px;height:24px;font:16px/24px Tahoma,Verdana,sans-serif;color:#787a70;text-decoration:none;cursor:pointer;background:transparent;border:none}
+.leaflet-popup-close-button:hover{color:#dcd8cc}
+.leaflet-layer,.leaflet-control-pane,.leaflet-popup-pane,.leaflet-tooltip-pane{pointer-events:none}
+.leaflet-popup-pane .leaflet-popup,.leaflet-control{pointer-events:visiblePainted}
+.leaflet-control{float:left;clear:both;pointer-events:auto}.leaflet-right .leaflet-control{float:right}
+.leaflet-top,.leaflet-bottom{position:absolute;z-index:1000;pointer-events:none}
+.leaflet-top{top:0}.leaflet-right{right:0}.leaflet-bottom{bottom:0}.leaflet-left{left:0}
+.leaflet-bar{box-shadow:0 1px 5px rgba(0,0,0,.55);border-radius:4px}
+.leaflet-bar a,.leaflet-bar a:hover{display:block;width:26px;height:26px;line-height:26px;color:#dcd8cc;font-size:18px;font-weight:bold;text-align:center;text-decoration:none;background:#1a221a}
+.leaflet-bar a:first-child{border-radius:4px 4px 0 0}.leaflet-bar a:last-child{border-radius:0 0 4px 4px;border-bottom:none}
+.leaflet-control-attribution{background:rgba(0,0,0,.55);box-shadow:none;margin:0;font-size:9px;padding:0 5px;color:#525a52;line-height:1.4}
+.leaflet-container .leaflet-control-attribution a{text-decoration:none;color:#68bf68}
+
+/* Mobile */
+@media(max-width:640px){
+  .app-panel{width:100%;border-right:none;border-bottom:1px solid rgba(255,255,255,.08);max-height:45vh}
+  .app-main{flex-direction:column}
+  #hero-map{flex:1;min-height:200px}
+  .app-hero{height:auto;min-height:100svh}
+  .ap-h1{font-size:18px}
+  .ap-lead{display:none}
+  .stat-row{gap:20px}.stat-num{font-size:36px}
+  h1{font-size:27px}.standfirst{font-size:15px}
+}
+</style>
+
+<!-- ═══════════════════════════════════════════════════════════
+     HERO — full-viewport immersive map
+══════════════════════════════════════════════════════════════ -->
+<div class="app-hero">
+
+  <!-- Map + panel row -->
+  <div class="app-main">
+
+    <!-- Left data panel -->
+    <aside class="app-panel" id="app-panel">
+
+      <div class="ap-brand">🌽 Maize Monitor · Earth Observation</div>
+
+      <h1 class="ap-h1">Drought and <em>deforestation</em> converge over Brazil's largest maize belt</h1>
+
+      <p class="ap-lead">Sentinel-2 imagery reveals a compressed NDVI curve across 9.8&nbsp;million hectares. Combined with the highest land conversion rate of all 20 regions, Mato Grosso scores as EUDR non-compliant.</p>
+
+      <!-- WHAT YOU'RE LOOKING AT -->
+      <div class="ap-section">
+        <div class="ap-label">What you're looking at</div>
+        <div class="ap-row"><span>Layer</span><strong>NDVI composite</strong></div>
+        <div class="ap-row"><span>Instrument</span><strong>Sentinel-2 SR</strong></div>
+        <div class="ap-row"><span>Season</span><strong>2024–25 safrinha</strong></div>
+        <div class="ap-row"><span>Region</span><strong>Mato Grosso, BR</strong></div>
+      </div>
+
+      <!-- EUDR status -->
+      <div class="ap-section">
+        <div class="ap-label">EUDR compliance</div>
+        <div class="ap-row"><span>Status</span><span class="ap-badge-nc">Non-compliant</span></div>
+        <div class="ap-row"><span>Land converted post-2020</span><strong style="color:#e05050">8.3%</strong></div>
+        <div class="ap-row"><span>Deforestation risk</span><strong style="color:#e05050">High</strong></div>
+        <div class="ap-row"><span>Area monitored</span><strong>9,800 kha</strong></div>
+      </div>
+
+      <!-- NDVI this month (dynamic) -->
+      <div class="ap-section">
+        <div class="ap-label">NDVI — season 2024–25</div>
+        <div class="ap-ndvi-val" id="ap-ndvi-val">0.52</div>
+        <div class="ap-ndvi-change" id="ap-ndvi-change">−24% vs 5-yr reference (0.68)</div>
+        <div class="ap-ndvi-month" id="ap-ndvi-month">March 2025 · peak vegetative stage</div>
+
+        <!-- Sparkline SVG: 7 months, both series -->
+        <svg class="ap-spark" viewBox="0 0 264 44" width="264" height="44" aria-hidden="true">
+          <!-- reference line -->
+          <polyline class="sp-ref" points="4,10.6 44,3.1 84,0 124,2.2 164,8.1 204,15.6 244,24.6"/>
+          <!-- season line -->
+          <polyline class="sp-szn" points="4,16.9 44,8.9 84,5.6 124,10.5 164,17.9 204,25.5 244,32.1"/>
+          <!-- reference dots (all 7) -->
+          <circle class="sp-dot-ref" cx="4"   cy="10.6" r="2"/>
+          <circle class="sp-dot-ref" cx="44"  cy="3.1"  r="2"/>
+          <circle class="sp-dot-ref" cx="84"  cy="0"    r="2"/>
+          <circle class="sp-dot-ref" cx="124" cy="2.2"  r="2"/>
+          <circle class="sp-dot-ref" cx="164" cy="8.1"  r="2"/>
+          <circle class="sp-dot-ref" cx="204" cy="15.6" r="2"/>
+          <circle class="sp-dot-ref" cx="244" cy="24.6" r="2"/>
+          <!-- season dots -->
+          <circle class="sp-dot" id="sp-dot-0" cx="4"   cy="16.9" r="2.5"/>
+          <circle class="sp-dot" id="sp-dot-1" cx="44"  cy="8.9"  r="2.5"/>
+          <circle class="sp-dot" id="sp-dot-2" cx="84"  cy="5.6"  r="2.5"/>
+          <circle class="sp-dot" id="sp-dot-3" cx="124" cy="10.5" r="2.5"/>
+          <circle class="sp-dot" id="sp-dot-4" cx="164" cy="17.9" r="2.5"/>
+          <circle class="sp-dot" id="sp-dot-5" cx="204" cy="25.5" r="2.5"/>
+          <circle class="sp-dot" id="sp-dot-6" cx="244" cy="32.1" r="2.5"/>
+          <!-- active month vertical line -->
+          <line class="sp-vline" id="sp-vline" x1="84" y1="0" x2="84" y2="44"/>
+        </svg>
+
+        <div style="display:flex;justify-content:space-between;font-size:9px;color:#525a52;margin-top:2px">
+          <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span><span>Jul</span>
+        </div>
+        <div style="display:flex;gap:12px;margin-top:8px;font-size:9px">
+          <span style="display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:16px;height:1.5px;background:#d49920;opacity:.7;vertical-align:middle"></span>2024–25</span>
+          <span style="display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:16px;height:1px;background:#68bf68;opacity:.5;vertical-align:middle"></span>5-yr ref</span>
+        </div>
+      </div>
+
+      <!-- Key figures -->
+      <div class="ap-section">
+        <div class="ap-label">Key figures</div>
+        <div class="ap-row"><span>Rainfall anomaly</span><strong style="color:#d49920">−18%</strong></div>
+        <div class="ap-row"><span>Peak NDVI deficit</span><strong style="color:#e05050">−0.16</strong></div>
+        <div class="ap-row"><span>Monitoring bbox</span><strong style="font-size:10px">58°W–50°W, 16°S–10°S</strong></div>
+      </div>
+
+      <!-- Source -->
+      <div class="ap-section">
+        <div class="ap-label">Data source</div>
+        <div class="ap-source">
+          COPERNICUS/S2_SR_HARMONIZED<br>
+          10 m · cloud filter &lt;20%<br>
+          Processed via GEE Python API<br>
+          Jan–Jul 2025
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- Leaflet map -->
+    <div id="hero-map"></div>
+
+  </div>
+
+  <!-- Bottom timeline bar -->
+  <div class="app-bar">
+    <div class="bar-label">Season 2024–25</div>
+    <div class="bar-months" id="bar-months">
+      <div class="bar-month" data-idx="0">Jan</div>
+      <div class="bar-month" data-idx="1">Feb</div>
+      <div class="bar-month active" data-idx="2">Mar</div>
+      <div class="bar-month" data-idx="3">Apr</div>
+      <div class="bar-month" data-idx="4">May</div>
+      <div class="bar-month" data-idx="5">Jun</div>
+      <div class="bar-month" data-idx="6">Jul</div>
+    </div>
+    <div style="font-size:10px;color:#525a52;white-space:nowrap;flex-shrink:0">
+      ↓ Scroll for story
+    </div>
+  </div>
+
+</div><!-- /app-hero -->
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     STORY — scroll below
+══════════════════════════════════════════════════════════════ -->
+<main>
+<div class="wrap">
+
+  <!-- Masthead -->
+  <div class="mast">
+    <a class="mast-name" href="https://margaretjohn14-alt.github.io/maize-monitor-platform/" target="_blank">🌽 Maize Monitor</a>
+    <nav class="mast-links">
+      <a href="https://github.com/margaretjohn14-alt/maize-monitor-platform" target="_blank">GitHub ↗</a>
+      <a href="https://margaretjohn14-alt.github.io/maize-monitor-platform/" target="_blank">Live map ↗</a>
+    </nav>
+  </div>
+
+  <!-- Article header -->
+  <div class="eyebrow">
+    <span>EO Investigation</span>
+    <span class="sep">·</span>
+    <span>Mato Grosso, Brazil</span>
+    <span class="sep">·</span>
+    <span>Season 2024–25</span>
+    <span class="badge-nc">EUDR Non-Compliant</span>
+  </div>
+
+  <h1>Drought and <em>deforestation</em> converge over Brazil's largest maize belt</h1>
+
+  <p class="standfirst">
+    Sentinel-2 imagery processed via the Google Earth Engine Python API reveals a compressed NDVI
+    curve across 9.8&nbsp;million hectares of Mato Grosso. Combined with an 8.3% post-2020 land
+    conversion rate, the highest of all 20 regions in this monitoring system, the region scores
+    as non-compliant under the EU Deforestation Regulation.
+  </p>
+
+  <!-- §1 -->
+  <span class="section-num">§1  Explain the problem</span>
+  <h2>What is happening, and why it matters</h2>
+  <p>
+    The region entered the monitoring pipeline on 15&nbsp;January&nbsp;2025, when soybean residue from
+    the preceding <em>safra</em> crop was still visible from orbit across the eastern cerrado plateau.
+    The first Sentinel-2 composite, computed on <code>COPERNICUS/S2_SR_HARMONIZED</code> over the
+    bounding box <code>58.0°W–50.0°W, 16.0°S–10.0°S</code>, returned a mean NDVI of
+    <strong>0.38</strong> for January, against a five-year reference mean of 0.44 for the same
+    geometry and calendar window.
+  </p>
+  <p>
+    By peak vegetative stage in March, the gap had widened. The 2024–25 curve reached a maximum of
+    <strong>0.52</strong>, against a reference peak of 0.68, a 0.16 deficit that persisted through
+    grain-fill and senescence. Across 9.8&nbsp;million hectares, that is roughly the growing area
+    of South Korea under sustained stress.
+  </p>
+
+  <!-- §4 NDVI chart -->
+  <span class="section-num">§4  What the instrument recorded</span>
+  <h2>Signal from orbit: compressed NDVI, season-long</h2>
+
+  <div class="fig">
+    <div class="fig-label">Fig. 1, Monthly NDVI, 2024–25 season vs. five-year reference</div>
+    <svg class="chart-svg" viewBox="0 0 540 212" xmlns="http://www.w3.org/2000/svg"
+         aria-label="NDVI comparison chart: 2024–25 season against five-year reference mean, January to July">
+      <line class="c-grid" x1="44" y1="16"  x2="524" y2="16"/>
+      <line class="c-grid" x1="44" y1="53"  x2="524" y2="53"/>
+      <line class="c-grid" x1="44" y1="90"  x2="524" y2="90"/>
+      <line class="c-grid" x1="44" y1="127" x2="524" y2="127"/>
+      <line class="c-grid" x1="44" y1="164" x2="524" y2="164"/>
+      <line class="c-grid" x1="44" y1="16"  x2="44"  y2="164"/>
+      <text class="c-label" x="38" y="19.5"  text-anchor="end">0.8</text>
+      <text class="c-label" x="38" y="56.5"  text-anchor="end">0.6</text>
+      <text class="c-label" x="38" y="93.5"  text-anchor="end">0.4</text>
+      <text class="c-label" x="38" y="130.5" text-anchor="end">0.2</text>
+      <text class="c-label" x="38" y="167.5" text-anchor="end">0.0</text>
+      <text class="c-label-m" x="44"  y="181" text-anchor="middle">Jan</text>
+      <text class="c-label-m" x="124" y="181" text-anchor="middle">Feb</text>
+      <text class="c-label-m" x="204" y="181" text-anchor="middle">Mar</text>
+      <text class="c-label-m" x="284" y="181" text-anchor="middle">Apr</text>
+      <text class="c-label-m" x="364" y="181" text-anchor="middle">May</text>
+      <text class="c-label-m" x="444" y="181" text-anchor="middle">Jun</text>
+      <text class="c-label-m" x="524" y="181" text-anchor="middle">Jul</text>
+      <path class="c-base-a" d="M 44,82.6 L 124,53 L 204,38.2 L 284,47.5 L 364,67.8 L 444,90 L 524,115.9 L 524,164 L 44,164 Z"/>
+      <path class="c-szn-a"  d="M 44,93.7 L 124,75.2 L 204,67.8 L 284,78.9 L 364,95.6 L 444,112.2 L 524,128.9 L 524,164 L 44,164 Z"/>
+      <polyline class="c-base-l" points="44,82.6 124,53 204,38.2 284,47.5 364,67.8 444,90 524,115.9"/>
+      <polyline class="c-szn-l"  points="44,93.7 124,75.2 204,67.8 284,78.9 364,95.6 444,112.2 524,128.9"/>
+      <circle class="c-base-d" cx="44"  cy="82.6"  r="2.5"/>
+      <circle class="c-base-d" cx="124" cy="53"    r="2.5"/>
+      <circle class="c-base-d" cx="204" cy="38.2"  r="2.5"/>
+      <circle class="c-base-d" cx="284" cy="47.5"  r="2.5"/>
+      <circle class="c-base-d" cx="364" cy="67.8"  r="2.5"/>
+      <circle class="c-base-d" cx="444" cy="90"    r="2.5"/>
+      <circle class="c-base-d" cx="524" cy="115.9" r="2.5"/>
+      <circle class="c-szn-d"  cx="44"  cy="93.7"  r="3"/>
+      <circle class="c-szn-d"  cx="124" cy="75.2"  r="3"/>
+      <circle class="c-szn-d"  cx="204" cy="67.8"  r="3"/>
+      <circle class="c-szn-d"  cx="284" cy="78.9"  r="3"/>
+      <circle class="c-szn-d"  cx="364" cy="95.6"  r="3"/>
+      <circle class="c-szn-d"  cx="444" cy="112.2" r="3"/>
+      <circle class="c-szn-d"  cx="524" cy="128.9" r="3"/>
+      <rect class="c-leg-g" x="44"  y="193" width="12" height="3" rx="1.5"/>
+      <text class="c-leg-t" x="61"  y="197">Five-year reference mean</text>
+      <rect class="c-leg-a" x="210" y="193" width="12" height="3" rx="1.5"/>
+      <text class="c-leg-t" x="227" y="197">2024–25 season</text>
+    </svg>
+    <p class="fig-cap">Monthly mean NDVI from Sentinel-2 SR (COPERNICUS/S2_SR_HARMONIZED), cloud
+      filter &lt;20%, reduced over the region bounding box. Reference mean is a representative
+      seasonal profile; 2024–25 values are sample pipeline outputs. The compressed peak (0.52 vs.
+      0.68 reference) and earlier decline are consistent with a −18% rainfall anomaly.</p>
+  </div>
+
+  <p>
+    A rainfall anomaly of −18%, the strongest drought signal across all 20 regions in this system, compounds the picture. Jalisco, Mexico records a larger rainfall deficit (−20%) but over a
+    fraction of the area. Here, 9.8&nbsp;million hectares are exposed simultaneously.
+  </p>
+
+  <div class="stat-row">
+    <div class="stat">
+      <span class="stat-num amber">−18%</span>
+      <span class="stat-unit">Rainfall anomaly, Jan–Jul 2025</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num red">8.3%</span>
+      <span class="stat-unit">Land converted after Jan 2020</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num">9,800</span>
+      <span class="stat-unit">Thousand hectares monitored</span>
+    </div>
+  </div>
+
+  <!-- Deforestation -->
+  <h2>The deforestation problem</h2>
+  <p>
+    Drought stress is not the most consequential signal from this region. Land conversion analysis
+    places 8.3% of the agricultural area as having undergone land use change after 1&nbsp;January&nbsp;2020, the cutoff date under the EU Deforestation Regulation (EUDR). This is the highest figure of any
+    region in this monitoring system, ahead of Kano State, Nigeria (4.1%) and East Java,
+    Indonesia (2.7%).
+  </p>
+  <p>
+    Under EUDR Article&nbsp;3, commodity crops, including maize, produced on land deforested or
+    degraded after that date cannot be placed on the EU market without a due-diligence statement
+    attesting to compliance. Brazil supplies approximately 30% of EU maize imports. Mato Grosso
+    alone accounts for a substantial share of Brazil's second-crop (<em>safrinha</em>) maize,
+    which is typically harvested in June and July, the period this season's most acute stress
+    falls within.
+  </p>
+
+  <!-- §3 -->
+  <span class="section-num">§3  How it was measured</span>
+  <h2>How it was measured</h2>
+  <p>
+    The pipeline authenticates to Google Earth Engine using a dedicated service account and
+    queries the <code>COPERNICUS/S2_SR_HARMONIZED</code> image collection. Per-scene cloud cover
+    is filtered to &lt;20%. NDVI is computed on atmospherically corrected surface reflectance
+    as (B8 − B4) / (B8 + B4) and reduced to monthly mean composites over the region bounding box
+    using GEE's <code>.mean().reduceRegion()</code> pipeline.
+  </p>
+
+  <div class="pipeline">
+    <div class="p-step"><span class="p-icon">🛰️</span><span class="p-name">Sentinel-2 SR</span><span class="p-tech">ESA · Copernicus</span></div>
+    <div class="p-arr">→</div>
+    <div class="p-step"><span class="p-icon">🌍</span><span class="p-name">Earth Engine</span><span class="p-tech">GEE Python API</span></div>
+    <div class="p-arr">→</div>
+    <div class="p-step"><span class="p-icon">🔌</span><span class="p-name">Flask API</span><span class="p-tech">REST endpoints</span></div>
+    <div class="p-arr">→</div>
+    <div class="p-step"><span class="p-icon">☁️</span><span class="p-name">Azure</span><span class="p-tech">Container Apps</span></div>
+    <div class="p-arr">→</div>
+    <div class="p-step"><span class="p-icon">🗺️</span><span class="p-name">Leaflet Map</span><span class="p-tech">GitHub Pages</span></div>
+  </div>
+
+  <p>
+    The monthly time series is served from a <code>GET /timeseries/{region_id}</code> endpoint and
+    consumed directly by the browser-side map, which renders an inline SVG sparkline in the
+    region sidebar. NDVI and yield estimates are computed on demand; results are not cached at
+    the API layer. The service account private key is stored as a GitHub Actions secret and
+    an Azure Container Apps secret; it is not committed to the repository.
+  </p>
+
+  <!-- Comparison table -->
+  <h2>Selected regions at a glance</h2>
+
+  <div class="tbl-wrap">
+    <table class="rtbl">
+      <thead>
+        <tr>
+          <th>Region</th><th>EUDR Status</th><th>Def. Risk</th><th>Land Converted</th><th>Rainfall</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="hl">
+          <td>Mato Grosso, Brazil</td>
+          <td><span class="dot" style="background:var(--red)"></span>Non-compliant</td>
+          <td style="color:var(--red)">High</td>
+          <td><strong>8.3%</strong></td><td>−18%</td>
+        </tr>
+        <tr>
+          <td>Kano State, Nigeria</td>
+          <td><span class="dot" style="background:var(--red)"></span>Non-compliant</td>
+          <td style="color:var(--red)">High</td>
+          <td>4.1%</td><td>−9%</td>
+        </tr>
+        <tr>
+          <td>Jalisco, Mexico</td>
+          <td><span class="dot" style="background:var(--amber)"></span>Under Review</td>
+          <td style="color:var(--amber)">Medium</td>
+          <td>1.9%</td><td>−20%</td>
+        </tr>
+        <tr>
+          <td>Poltava, Ukraine</td>
+          <td><span class="dot" style="background:var(--green)"></span>Compliant</td>
+          <td style="color:var(--green)">Low</td>
+          <td>0.2%</td><td>−11%</td>
+        </tr>
+        <tr>
+          <td>Free State, South Africa</td>
+          <td><span class="dot" style="background:var(--green)"></span>Compliant</td>
+          <td style="color:var(--green)">Low</td>
+          <td>0.4%</td><td>−14%</td>
+        </tr>
+        <tr>
+          <td>Iowa Corn Belt, USA</td>
+          <td><span class="dot" style="background:var(--green)"></span>Compliant</td>
+          <td style="color:var(--green)">Low</td>
+          <td>0.1%</td><td>−8%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Limitations -->
+  <h2>What this cannot tell you</h2>
+  <div class="limits">
+    <div class="limits-h">Caveats and limits</div>
+    <ul>
+      <li>NDVI at bounding-box resolution cannot distinguish crop stress in standing fields
+          from normal senescence in already-harvested blocks. The January 0.38 value may
+          reflect late planting, fallow, or early-season drought; the data does not resolve that.</li>
+      <li>The 8.3% land conversion figure derives from spatial analysis of the region boundary.
+          It identifies converted land within the monitoring footprint but does not establish
+          which parcels supplied any specific shipment. For EUDR due-diligence purposes, parcel-level
+          geolocation verification against the European Commission's risk classification is required.</li>
+      <li>Cloud cover in the humid tropics reduces usable observations. Months with fewer than
+          three cloud-free scenes are less reliable; this monitoring system does not flag
+          per-composite scene count.</li>
+      <li>Yield forecasts are computed from a linear NDVI–yield model (slope, intercept) fitted
+          at the regional scale. They indicate relative performance, not absolute production
+          figures, and should not be used for commodity trading decisions.</li>
+    </ul>
+  </div>
+
+  <!-- §5 Data & code -->
+  <span class="section-num">§5  Data & code</span>
+  <h2>Explore the data and code</h2>
+
+  <div class="panels">
+    <a class="panel" href="https://margaretjohn14-alt.github.io/maize-monitor-platform/" target="_blank">
+      <span class="panel-icon">🗺️</span>
+      <span class="panel-name">Live map</span>
+      <span class="panel-desc">Interactive Leaflet map, 20 regions, EUDR status, live NDVI sidebar</span>
+      <span class="panel-arrow">Open ↗</span>
+    </a>
+    <a class="panel" href="https://maize-monitor.thankfulsand-8aae49c0.northeurope.azurecontainerapps.io/timeseries/mato-grosso" target="_blank">
+      <span class="panel-icon">📡</span>
+      <span class="panel-name">Timeseries API</span>
+      <span class="panel-desc"><code style="font-size:11px">GET /timeseries/mato-grosso</code> — raw monthly NDVI JSON from GEE</span>
+      <span class="panel-arrow">Try it ↗</span>
+    </a>
+    <a class="panel" href="https://maize-monitor.thankfulsand-8aae49c0.northeurope.azurecontainerapps.io/estimate/mato-grosso" target="_blank">
+      <span class="panel-icon">🌾</span>
+      <span class="panel-name">Yield estimate API</span>
+      <span class="panel-desc"><code style="font-size:11px">GET /estimate/mato-grosso</code> — NDVI + yield forecast JSON</span>
+      <span class="panel-arrow">Try it ↗</span>
+    </a>
+    <a class="panel" href="https://github.com/margaretjohn14-alt/maize-monitor-platform" target="_blank">
+      <span class="panel-icon">⌨️</span>
+      <span class="panel-name">Source code</span>
+      <span class="panel-desc">GEE pipeline, Flask API, Leaflet frontend, MIT licence</span>
+      <span class="panel-arrow">GitHub ↗</span>
+    </a>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-block">
+    <div class="cta-label">Explore the data</div>
+    <a class="cta-link" href="https://margaretjohn14-alt.github.io/maize-monitor-platform/" target="_blank">Open the live map ↗</a>
+    <p class="cta-sub">20 regions · NDVI time series · EUDR compliance · Live Sentinel-2 via GEE</p>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <span>Sentinel-2 SR · COPERNICUS/S2_SR_HARMONIZED · ESA</span>
+    <a href="https://github.com/margaretjohn14-alt/maize-monitor-platform" target="_blank">Code ↗</a>
+    <span>Built by Margaret John · KIT / DLR</span>
+  </footer>
+
+</div>
+</main>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     MAP + TIMELINE SCRIPT
+══════════════════════════════════════════════════════════════ -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+(function () {
+  /* ── Data ── */
+  var NDVI_SZN = [0.38, 0.48, 0.52, 0.46, 0.37, 0.28, 0.19];
+  var NDVI_REF = [0.44, 0.60, 0.68, 0.63, 0.52, 0.40, 0.26];
+  var MONTHS   = ['January 2025','February 2025','March 2025','April 2025','May 2025','June 2025','July 2025'];
+  var MONTH_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul'];
+  var MONTH_CTX   = ['pre-planting','early growth','peak vegetative stage','grain fill','maturation','harvest','post-harvest'];
+  /* Sparkline X positions */
+  var SP_X = [4, 44, 84, 124, 164, 204, 244];
+
+  var REGIONS = [
+    {id:'mato-grosso',         name:'Mato Grosso, Brazil',       lat:-13,  lng:-55,   eudr:'noncompliant', lc:8.3,  risk:'High'},
+    {id:'nigeria-kano',        name:'Kano State, Nigeria',        lat:11.8, lng:8.5,   eudr:'noncompliant', lc:4.1,  risk:'High'},
+    {id:'indonesia-eastjava',  name:'East Java, Indonesia',       lat:-7.5, lng:112.5, eudr:'noncompliant', lc:2.7,  risk:'Medium'},
+    {id:'mexico-jalisco',      name:'Jalisco, Mexico',            lat:20.3, lng:-103,  eudr:'review',       lc:1.9,  risk:'Medium'},
+    {id:'india-karnataka',     name:'Karnataka, India',           lat:14,   lng:75,    eudr:'review',       lc:1.5,  risk:'Medium'},
+    {id:'philippines-mindanao',name:'Mindanao, Philippines',      lat:7.5,  lng:124.5, eudr:'review',       lc:2.1,  risk:'Medium'},
+    {id:'tanzania-mbeya',      name:'Mbeya, Tanzania',            lat:-9,   lng:34,    eudr:'review',       lc:1.8,  risk:'Medium'},
+    {id:'malawi-central',      name:'Central Malawi',             lat:-13,  lng:34,    eudr:'review',       lc:1.2,  risk:'Medium'},
+    {id:'free-state',          name:'Free State, South Africa',   lat:-28,  lng:27,    eudr:'compliant',    lc:0.4,  risk:'Low'},
+    {id:'north-west',          name:'North West, South Africa',   lat:-26,  lng:24,    eudr:'compliant',    lc:0.3,  risk:'Low'},
+    {id:'kenya-rift',          name:'Rift Valley, Kenya',         lat:0,    lng:36,    eudr:'compliant',    lc:0.6,  risk:'Low'},
+    {id:'ethiopia-oromia',     name:'Oromia, Ethiopia',           lat:7.5,  lng:39,    eudr:'compliant',    lc:0.5,  risk:'Low'},
+    {id:'zambia-central',      name:'Central Zambia',             lat:-14,  lng:28,    eudr:'compliant',    lc:0.7,  risk:'Low'},
+    {id:'argentina-pampas',    name:'Argentine Pampas',           lat:-34,  lng:-63,   eudr:'compliant',    lc:0.2,  risk:'Low'},
+    {id:'iowa-cornbelt',       name:'Iowa Corn Belt, USA',        lat:42,   lng:-93,   eudr:'compliant',    lc:0.1,  risk:'Low'},
+    {id:'ukraine-poltava',     name:'Poltava, Ukraine',           lat:49.6, lng:34.5,  eudr:'compliant',    lc:0.2,  risk:'Low'},
+    {id:'france-beauce',       name:'Beauce, France',             lat:48.2, lng:1.5,   eudr:'compliant',    lc:0.0,  risk:'Low'},
+    {id:'romania-muntenia',    name:'Muntenia, Romania',          lat:44.5, lng:25,    eudr:'compliant',    lc:0.1,  risk:'Low'},
+    {id:'china-heilongjiang',  name:'Heilongjiang, China',        lat:47,   lng:128,   eudr:'compliant',    lc:0.3,  risk:'Low'},
+    {id:'hungary-greatplain',  name:'Great Plain, Hungary',       lat:47,   lng:21,    eudr:'compliant',    lc:0.0,  risk:'Low'},
+  ];
+
+  var COLOR = { noncompliant:'#e05050', review:'#d49920', compliant:'#68bf68' };
+  var LABEL = { noncompliant:'Non-compliant', review:'Under review', compliant:'Compliant' };
+
+  /* ── NDVI to overlay color ── */
+  function ndviColor(v) {
+    v = Math.max(0.1, Math.min(0.7, v));
+    var t = (v - 0.1) / 0.6; // 0 → 1
+    // brown #7a4010 → gold #b4a020 → green #2b7832
+    var r, g, b;
+    if (t < 0.5) {
+      var s = t / 0.5;
+      r = Math.round(122 + (180 - 122) * s);
+      g = Math.round(64  + (160 - 64)  * s);
+      b = Math.round(16  + (32  - 16)  * s);
+    } else {
+      var s = (t - 0.5) / 0.5;
+      r = Math.round(180 + (43  - 180) * s);
+      g = Math.round(160 + (120 - 160) * s);
+      b = Math.round(32  + (50  - 32)  * s);
+    }
+    return 'rgb(' + r + ',' + g + ',' + b + ')';
+  }
+
+  /* ── Initialise map ── */
+  var map = L.map('hero-map', {
+    center: [-13, -55], zoom: 3,
+    scrollWheelZoom: false,
+    zoomControl: true,
+  });
+
+  /* ESRI World Imagery — satellite tiles */
+  L.tileLayer(
+    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    {
+      attribution: 'Tiles &copy; Esri &mdash; Source: Esri, USDA, USGS, AEX, GeoEye, IGN, IGP',
+      maxZoom: 18,
+    }
+  ).addTo(map);
+
+  /* Region circles */
+  REGIONS.forEach(function (r) {
+    var focus = r.id === 'mato-grosso';
+    var col   = COLOR[r.eudr];
+    var mk    = L.circleMarker([r.lat, r.lng], {
+      radius:      focus ? 18 : 7,
+      color:       col,
+      weight:      focus ? 2 : 1,
+      fillColor:   col,
+      fillOpacity: focus ? 0.4 : 0.25,
+    }).addTo(map);
+    mk.bindPopup(
+      '<strong style="font-size:13px;color:#dcd8cc">' + r.name + '</strong>' +
+      '<div style="margin-top:7px"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:' + col + ';margin-right:5px;vertical-align:middle"></span>' +
+      '<span style="color:#a4a898">EUDR: </span><b style="color:#dcd8cc">' + LABEL[r.eudr] + '</b></div>' +
+      '<div style="color:#787a70;margin-top:3px">Land converted post-2020: <b style="color:#dcd8cc">' + r.lc + '%</b></div>' +
+      '<div style="color:#787a70;margin-top:2px">Deforestation risk: <b style="color:#dcd8cc">' + r.risk + '</b></div>',
+      { maxWidth: 230 }
+    );
+  });
+
+  /* Mato Grosso NDVI bbox overlay — color updates with month */
+  var bbox = L.rectangle([[-16, -58], [-10, -50]], {
+    color: '#e05050', weight: 1.5, dashArray: '5 4', opacity: 0.8,
+    fillColor: ndviColor(NDVI_SZN[2]),
+    fillOpacity: 0.3,
+  }).addTo(map);
+
+  map.fitBounds([[-28, -100], [55, 145]], { padding: [20, 20] });
+
+  /* ── Timeline interaction ── */
+  var currentIdx = 2; // start at March
+
+  function setMonth(idx) {
+    currentIdx = idx;
+    var ndvi = NDVI_SZN[idx];
+    var ref  = NDVI_REF[idx];
+    var pct  = Math.round(((ndvi - ref) / ref) * 100);
+
+    /* Update sidebar */
+    document.getElementById('ap-ndvi-val').textContent    = ndvi.toFixed(2);
+    document.getElementById('ap-ndvi-change').textContent = pct + '% vs 5-yr reference (' + ref.toFixed(2) + ')';
+    document.getElementById('ap-ndvi-change').style.color = pct < 0 ? '#e05050' : '#68bf68';
+    document.getElementById('ap-ndvi-month').textContent  = MONTHS[idx] + ' · ' + MONTH_CTX[idx];
+
+    /* Update sparkline */
+    var vline = document.getElementById('sp-vline');
+    if (vline) { vline.setAttribute('x1', SP_X[idx]); vline.setAttribute('x2', SP_X[idx]); }
+    for (var i = 0; i < 7; i++) {
+      var d = document.getElementById('sp-dot-' + i);
+      if (d) { d.setAttribute('r', i === idx ? '4' : '2.5'); d.style.opacity = i === idx ? '1' : '0.6'; }
+    }
+
+    /* Update bbox fill */
+    bbox.setStyle({ fillColor: ndviColor(ndvi), fillOpacity: 0.3 + ndvi * 0.2 });
+
+    /* Update bottom bar */
+    var btns = document.querySelectorAll('.bar-month');
+    btns.forEach(function (b) {
+      b.classList.toggle('active', parseInt(b.dataset.idx, 10) === idx);
+    });
+  }
+
+  /* Month bar click */
+  document.getElementById('bar-months').addEventListener('click', function (e) {
+    var btn = e.target.closest('.bar-month');
+    if (!btn) return;
+    setMonth(parseInt(btn.dataset.idx, 10));
+  });
+
+  /* Enable scroll zoom on click */
+  map.on('click', function () { map.scrollWheelZoom.enable(); });
+
+  /* Init display */
+  setMonth(2);
+})();
+</script>
